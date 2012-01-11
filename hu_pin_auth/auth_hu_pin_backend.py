@@ -131,14 +131,13 @@ class HarvardPinAbstractAuthBackend(object):
             return None
             
         return user
-        
-    def get_user(self, user_id):
-        # Required for your backend to work properly - unchanged in most scenarios
+
+    def get_user(self,user_id):
         try:
             return User.objects.get(pk=user_id)
         except User.DoesNotExist:
             return None
-    
+
 
 class HarvardPinSimpleAuthBackend(HarvardPinAbstractAuthBackend):
     supports_inactive_user = False

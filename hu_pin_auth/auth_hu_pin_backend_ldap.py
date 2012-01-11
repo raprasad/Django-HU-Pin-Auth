@@ -46,6 +46,8 @@ class HarvardPinWithLdapAuthBackend(HarvardPinAbstractAuthBackend):
         try:
             # Check if the user exists in Django's local database
             user = User.objects.get(username=username)
+            user.is_staff = True
+            user.save()
         except User.DoesNotExist:
             # Create a user in Django's local database
             user = User.objects.create_user(username, email='anonymous@ok.com')
