@@ -1,16 +1,16 @@
 """
 To work with HU PIN or other apps that require LDAP lookups
 """
-"""
+
 if __name__=='__main__':
     import os, sys
-    sys.path.append('../../mcb')
+    sys.path.append('/Users/rprasad/mcb-git/Grant-Database-Finances/grant_financials')
     from django.core.management import setup_environ
     import settings
     setup_environ(settings)
 else:
     import settings
-"""    
+    
 from django.conf import settings
     
 import ldap, sys, md5
@@ -25,7 +25,7 @@ ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)  # allow self
 # Please fill these in
 #
 CUSTOMER_NAME = settings.LDAP_CUSTOMER_NAME # username/id for binding to ldap server   
-CUSTOMER_PW =  settings.LDAP_CUSTOMER_PASSWORD ' # password for binding to ldap server   
+CUSTOMER_PW =  settings.LDAP_CUSTOMER_PASSWORD  # password for binding to ldap server   
 
 def msg(m): print m
 def dashes(): msg('-'*40)

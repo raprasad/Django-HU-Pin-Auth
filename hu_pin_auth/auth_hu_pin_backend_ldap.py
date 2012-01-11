@@ -4,65 +4,12 @@ from urlparse import urlparse, parse_qs
 import time, hashlib
 import gnupg
 from textwrap import dedent
+from datetime import datetime
 
-from hu_ldap_basic.hu_directory_search import HUDirectorySearcher
+from hu_pin_auth.auth_hu_pin_backend import HarvardPinAbstractAuthBackend
+from hu_ldap_basic.hu_directory_search import HUDirectorySearcher    
 
-
-AUTH_URL_CALLBACK_KEYWORDS = ('__authen_pgp_signature' , '__authen_time', '__authen_application', '__authen_ip', '__authen_pgp_version', '__authen_huid' )
-
-
-def is_pgp_message_verified(lu):
-    """Test the PGP signature according to HU specs. 
-    document: PIN2 Developer Resources.pdf
-    lu: dict containing values for AUTH_URL_CALLBACK_KEYWORDS """
-    print '-'  * 40
-    print 'is_pgp_message_verified', lu
-    print '-'  * 40
-    
-    print '1 lu'
-    if lu is None:
-        return None
-        
-    # make sure all the keywords are in the dict
-    print '2 AUTH_URL_CALLBACK_KEYWORDS'
-    for kw in AUTH_URL_CALLBACK_KEYWORDS:
-        if kw not in lu.keys():
-            return None
-        
-    # create the token as described in 
-    token = '%s|%s||%s|%s' % (lu['__authen_application']\
-                , lu['__authen_huid']
-                , lu['__authen_ip']
-                , lu['__authen_time']
-                )
-        #msg('__authen_pgp_signature: %s' % lu['__authen_pgp_signature'])
-
-        #msg('token: [%s]' % token)
-
-    print '3 token'
-    
-    pgp_msg = """-----BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-%s
------BEGIN PGP SIGNATURE-----
-Version: 5.0
-
-%s
------END PGP SIGNATURE-----""" % (token, lu['__authen_pgp_signature'])
-
-    print '4', pgp_msg
-
-    gpg_obj = gnupg.GPG()
-
-    v = gpg_obj.verify(pgp_msg)
-    if v is not None and v.valid==True:
-        return True
-        
-    return False
-    
-
-class HarvardPinSimpleAuthBackend(object):
+class HarvardPinWithLdapAuthBackend(HarvardPinAbstractAuthBackend):
     """This authentication backend handles callbacks after people have logged with a Harvard Pin.
     
     The "token" passed to the authenticate message is the callback url returned from the HU authentication system, including the GET arguments.
@@ -70,28 +17,30 @@ class HarvardPinSimpleAuthBackend(object):
     Note: username is a hash of Harvard Pin--not the pin itself
     """
     supports_inactive_user = False
+    supports_anonymous_user = False
 
-    def authenticate(self, token=None):
-        # Check the token and return a User.
-        if token is None:
+    def get_or_create_user(self, lu):
+        if lu is None:
+            msg('user is info is None')
             return None
-            
-        # (1) break the url into key/value pairs
-        try:
-            lu = parse_qs(urlparse(token).query)
-        except: 
-            return None
-        
-        for k, v in lu.iteritems():
-            lu.update({k: v[0].strip()})
-
-        # (2) Test the PGP message
-        if not is_pgp_message_verified(lu):
-            return None
-        
+      
         #username = hashlib.sha224(lu['__authen_huid']).hexdigest()
-        username = lu['__authen_huid'] # for test
-        print 'username', username
+        huid = lu.get('__authen_huid', None)
+        if huid is None:
+            msg('__authen_huid is None')            
+            return None
+    
+        searcher = HUDirectorySearcher() 
+        #kwarg = eval('lname="prasad"')
+        members = searcher.find_people(**{'huid':huid})
+        searcher.close_connection()
+        if members is not None and len(members)==1:
+            member = members[0]
+            username = member.givenName
+        else:
+            msg('huid lookup failed None')            
+        
+        print username
         
         # (3) Retrieve user's credentials
         try:
@@ -103,18 +52,6 @@ class HarvardPinSimpleAuthBackend(object):
             user.set_unusable_password()
             user.is_staff = True
             user.save()
-            
-        user.backend = 'hu_pin_auth.auth_hu_pin_backend.HarvardPinSimpleAuthBackend' 
+        user.backend = 'hu_pin_auth.auth_hu_pin_backend_ldap.HarvardPinWithLdapAuthBackend' 
+        
         return user
-
-
-    def get_user(self, user_id):
-        # Required for your backend to work properly - unchanged in most scenarios
-        try:
-            return User.objects.get(pk=user_id)
-        except User.DoesNotExist:
-            return None
-            
-            
-            
-            
