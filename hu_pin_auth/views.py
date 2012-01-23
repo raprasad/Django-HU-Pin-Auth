@@ -13,10 +13,12 @@ def view_handle_pin_callback(request):
     
     auth = HarvardPinWithLdapAuthBackend()
     
-    if request.GET:
-        next = request.GET.get('next', '/mcb-grants/grant-admin/')
+    # if authentication is succesful, go to a specified 'next' link or deftaul to the admin
+    #
+    if request.GET and request.GET.get('next', None) is not None
+        next = request.GET.get('next')
     else:
-        next = 'no next'
+        next =  reverse('admin:index', {})
         
     print 'request.path: %s' % request.get_full_path()
     #user = auth.authenticate(request.get_full_path())
@@ -27,7 +29,7 @@ def view_handle_pin_callback(request):
             login(request, user)
             return HttpResponseRedirect(next)
         else:
-            return 'account not active!'
+            return 'account not active err!'
     return HttpResponse('auth fail')
     
     
