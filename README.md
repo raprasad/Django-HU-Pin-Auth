@@ -1,4 +1,13 @@
-=== Django Authentication Backend for Harvard Pin ===
+Django Authentication Backend for Harvard Pin
+================================
+
+By plugging the authentication backend into your django settings, the code will:
+	
+1. authenticate a user via Harvard Pin
+	->  uses Pin 1 authentication for constructing the PGP-signed message
+2. upon authentication, look up the person's info via *HU LDAP
+	->  * [LDAP isite](http://isites.harvard.edu/icb/icb.do?keyword=k236&pageid=icb.page527)
+3. create a Django User object based on the HU LDAP information (username, last name, first name, email)
 
 # How to use
 - Include "hu_pin_auth" module on your PYTHON_PATH
