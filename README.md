@@ -39,11 +39,11 @@ By plugging the authentication backend into your django settings, the code will:
 AUTHENTICATION_BACKENDS 
 
     - example with standard backend + HU PIN backend:
-    ```
-        AUTHENTICATION_BACKENDS = (   'django.contrib.auth.backends.ModelBackend',
-            'hu_pin_auth.auth_hu_pin_backend.HarvardPinSimpleAuthBackend',
-        )
-    ```
+```
+    AUTHENTICATION_BACKENDS = (   'django.contrib.auth.backends.ModelBackend',
+                                  'hu_pin_auth.auth_hu_pin_backend.HarvardPinSimpleAuthBackend',
+                                  )
+```
 
 - In settings.py add, at your app name to HU_PIN_LOGIN_APP_NAMES.  This is the name given when you [Register a Pin 2 Application](http://reference.pin.harvard.edu/dev-registration)
     - example: HU_PIN_LOGIN_APP_NAMES = ('FAS_MCB_AUTH_DEV',)
@@ -55,8 +55,9 @@ AUTHENTICATION_BACKENDS
     - Example of link that was added to the django admin/login.html template. [overriding-admin-templates](https://docs.djangoproject.com/en/dev/ref/contrib/admin/#overriding-admin-templates)
 
         - Include your app name where it reads 'FAS_MY_DEPT_AUTH_DEV':
-        ```   
-        <a href="https://www.pin1.harvard.edu/pin/authenticate?__authen_application=FAS_MY_DEPT_AUTH_DEV&next={% url admin:index %}"><u>USE PIN LOGIN</u></a>````
+```   
+        <a href="https://www.pin1.harvard.edu/pin/authenticate?__authen_application=FAS_MY_DEPT_AUTH_DEV&next={% url admin:index %}"><u>USE PIN LOGIN</u></a>
+````
 
 - In the example above, a successful log in redirects back to the admin index page, this can be changed in either:
 
