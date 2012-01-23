@@ -23,12 +23,10 @@ def is_pgp_message_verified(lu):
     print 'is_pgp_message_verified', lu
     print '-'  * 40
     
-    print '1 lu'
     if lu is None:
         return None
         
     # make sure all the keywords are in the dict
-    print '2 AUTH_URL_CALLBACK_KEYWORDS'
     for kw in AUTH_URL_CALLBACK_KEYWORDS:
         if kw not in lu.keys():
             return None
@@ -39,11 +37,6 @@ def is_pgp_message_verified(lu):
                 , lu['__authen_ip']
                 , lu['__authen_time']
                 )
-        #msg('__authen_pgp_signature: %s' % lu['__authen_pgp_signature'])
-
-        #msg('token: [%s]' % token)
-
-    print '3 token'
     
     pgp_msg = """-----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
@@ -54,8 +47,6 @@ Version: 5.0
 
 %s
 -----END PGP SIGNATURE-----""" % (token, lu['__authen_pgp_signature'])
-
-    print '4', pgp_msg
 
     gpg_obj = gnupg.GPG()
 
@@ -86,7 +77,7 @@ class HarvardPinAbstractAuthBackend(object):
             return None
             
         url_full_path = request.get_full_path()
-            
+
         # (1) break the url into key/value pairs
         try:
             lu = parse_qs(urlparse(url_full_path).query)
@@ -108,9 +99,13 @@ class HarvardPinAbstractAuthBackend(object):
             return None
         
         # (2b) verify the IP
-        if not lu['__authen_ip'] == request.META.get('REMOTE_ADDR', None):
-            msg('IP failed verification: url[%s] actual[%s]' % (lu['__authen_ip'], request.META.get('REMOTE_ADDR', 'unknown')) )
-            return None
+        remote_addr = request.META.get('REMOTE_ADDR', None)
+        if not lu['__authen_ip'] == remote_addr:
+            if settings.DEBUG and remote_addr == '127.0.0.1':
+                pass
+            else:
+                msg('IP failed verification: url[%s] actual[%s]' % (lu['__authen_ip'], request.META.get('REMOTE_ADDR', 'unknown')) )
+                return None
         
         # (2c) check that time not longer than 2 minutes old
         # e.g. __authen_time=Wed Jan 11 09:50:16 EST 2012
@@ -140,8 +135,8 @@ class HarvardPinAbstractAuthBackend(object):
 
 
 class HarvardPinSimpleAuthBackend(HarvardPinAbstractAuthBackend):
-    supports_inactive_user = False
-    supports_anonymous_user = False
+    #supports_inactive_user = False
+    #supports_anonymous_user = False
 
     def get_or_create_user(self, lu):
         if lu is None:

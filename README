@@ -1,4 +1,4 @@
-# Django Authentication Backend for Harvard Pin
+=== Django Authentication Backend for Harvard Pin ===
 
 # How to use
 - Include "hu_pin_auth" module on your PYTHON_PATH
