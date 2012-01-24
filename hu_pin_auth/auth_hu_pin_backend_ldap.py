@@ -23,6 +23,9 @@ class HarvardPinWithLdapAuthBackend(HarvardPinAbstractAuthBackend):
             msg('user is info is None')
             return None
       
+        self.err_no_email_in_hu_ldap = False
+        self.err_huid_not_found_in_hu_ldap = False
+        
         #username = hashlib.sha224(lu['__authen_huid']).hexdigest()
         huid = lu.get('__authen_huid', None)
         if huid is None:
@@ -36,13 +39,13 @@ class HarvardPinWithLdapAuthBackend(HarvardPinAbstractAuthBackend):
         if members is not None and len(members)==1:
             member = members[0]
             if member.mail is None:
+                self.err_no_email_in_hu_ldap = True
                 return None
             username = member.mail
         else:
-            msg('huid lookup failed None')            
-        
-        print username
-        
+            self.err_huid_not_found_in_hu_ldap = True
+            return None
+                
         # (3) Retrieve user's credentials
         try:
             # Check if the user exists in Django's local database

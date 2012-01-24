@@ -1,0 +1,20 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="../">{% trans 'Home' %}</a></div>{% endblock %}
+
+{% block content %}
+
+{% if pin_callback_handler and pin_callback_handler.has_err %}
+<p>{% if pin_callback_handler.err_account_not_active %}
+   Your account is not active. Please contact the system administrator.
+   {% else %}
+    Your log in failed.  Please make try again.
+    <p>If the problem persists, contact the system administrator.</p>
+   {% endif %} 
+
+</p>
+{% endif %}
+<p><a href="../">{% trans 'Log in again' %}</a></p>
+
+{% endblock %}

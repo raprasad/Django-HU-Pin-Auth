@@ -5,4 +5,6 @@ urlpatterns = patterns(
 
     url(r'^hu_auth/callback/$', 'view_handle_pin_callback', name='view_handle_pin_callback' ),
 
+    #url(r'^hu_auth/pin-auth-fail/$', 'view_handle_pin_auth_fail', name='view_handle_pin_auth_fail' ),
+
 )

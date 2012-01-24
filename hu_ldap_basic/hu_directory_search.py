@@ -152,7 +152,7 @@ if __name__=='__main__':
     searcher = HUDirectorySearcher() 
     #kwarg = eval('lname="prasad"')
     members = searcher.find_people(**lu)
-    if members is not None:
-        for idx, mi in enumerate(members): print idx+1, mi.show(); dashes()
+    #if members is not None:
+    #    for idx, mi in enumerate(members): print idx+1, mi.show(); dashes()
     searcher.close_connection()
  
