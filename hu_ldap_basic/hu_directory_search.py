@@ -13,7 +13,7 @@ else:
     
 from django.conf import settings
     
-import ldap, sys, md5
+import ldap, sys
 
 from member_info import MemberInfo
 
@@ -64,13 +64,13 @@ class HUDirectorySearcher:
         
     def get_ldap_connection(self):
         
-        msgt('(1) attempt to initialize url')        
+        #msgt('(1) attempt to initialize url')        
         conn = ldap.initialize(self.ldap_url) 
-        msg('url initialized')
+        #msg('url initialized')
         
-        msgt('(2) attempt to bind to server with CUSTOMER_NAME = "%s"' % CUSTOMER_NAME )
+        #msgt('(2) attempt to bind to server with CUSTOMER_NAME = "%s"' % CUSTOMER_NAME )
         conn.simple_bind_s(self.ad_bind_usr, self.ad_bind_pw)
-        msg('bind successful')
+        #msg('bind successful')
         
         return conn
         
@@ -93,7 +93,9 @@ class HUDirectorySearcher:
                 filter_pairs.append('(%s=%s)' % (ad_kw, kwarg_val))
         
         if len(filter_pairs) == 0:
-            msgx('None of these keywords found in search filter: %s'  %  '\n - '.join(kw_ad_attrs_dict.keys()) )
+            pass
+            return
+            #msgx('None of these keywords found in search filter: %s'  %  '\n - '.join(kw_ad_attrs_dict.keys()) )
         elif len(filter_pairs) == 1:
             search_filter = filter_pairs[0]
         else:
@@ -107,19 +109,22 @@ class HUDirectorySearcher:
         # search the people section of HU Core
         AD_SEARCH_DN = "ou=people, o=Harvard University Core, dc=huid, dc=harvard, dc=edu";
         #search_filter = '(&(givenName=r*)(sn=smith))'
-        msg('using filter: %s' % search_filter)
+        #msg('using filter: %s' % search_filter)
+        
         try:
             results = self.ldap_conn.search_ext_s(self.AD_SEARCH_DN,ldap.SCOPE_SUBTREE, search_filter, FIELDS_TO_RETURN)  
         except UnicodeEncodeError:
-            msg('ERROR: filter had UnicodeEncodeError')
+            #msg('ERROR: filter had UnicodeEncodeError')
             return None
         
-        msg('search complete - raw results:')
+        '''
+        #msg('search complete - raw results:')
         dashes()
         print results
         dashes()
-        msg('formatted results')
+        #msg('formatted results')
         dashes()
+        '''
         
         members = []
         for idx, r in enumerate(results):
@@ -131,7 +136,7 @@ class HUDirectorySearcher:
             #mi.show()
        
         if members == []:
-            msg('>> no results from search')
+            #msg('>> no results from search')
             return None
         
         return members

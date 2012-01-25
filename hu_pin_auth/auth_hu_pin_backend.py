@@ -1,7 +1,12 @@
 from django.conf import settings
 from django.contrib.auth.models import User
 from urlparse import urlparse, parse_qs
-import time, hashlib
+import time
+try:
+    from hashlib import sha1
+except:
+    import md5
+
 
 import gnupg
 from textwrap import dedent
@@ -67,12 +72,44 @@ class HarvardPinAbstractAuthBackend(object):
     """
     supports_inactive_user = False
     supports_anonymous_user = False
+    supports_object_permissions = True
     
-    #log = logging.getLogger(__name__)
-
+    def __init__(self, **kwargs):
+        self.expiration_check_time_seconds = 2 * 60 # 2 minutes until PGP log in message expires 
+        
+        # Error flags that may be raised in the authentication process
+        # These flags may later be used in templates
+        self.error_check_attribute_names = ['err_no_request_obj'\
+                                , 'err_url_parse'\
+                                , 'err_pgp_msg_check'\
+                                , 'err_huid_check'\
+                                , 'err_app_name_check'\
+                                , 'err_ip_check'\
+                                , 'err_time_check' ]
+    
+    def get_expiration_check_seconds(self):
+        return self.expiration_check_time_seconds   # seconds until PGP log in message expires 
+        
+        
+    def init_err_checks(self):
+        # using the attribute name strings, add boolean attributes to the object
+        for attr_name in self.error_check_attribute_names:
+            self.__dict__.update({attr_name : False})
+        
+    def get_err_flag_dict(self):
+        # using the attribute name strings, return a {} containing the error flags
+        lu = {}
+        for attr_name in self.error_check_attribute_names:
+            lu.update({ attr_name : self.__dict__.get(attr_name, False )})
+        return lu
+        
     def authenticate(self, request=None):
-        # Check the token and return a User.
+        
+        # initialize error flags
+        self.init_err_checks()
+        
         if request is None:
+            self.err_no_request_obj = True
             msg("request is None")
             return None
             
@@ -82,6 +119,7 @@ class HarvardPinAbstractAuthBackend(object):
         try:
             lu = parse_qs(urlparse(url_full_path).query)
         except: 
+            self.err_url_parse = True
             msg('failed to parse path: [%s]' % (url_full_path))
             return None
         
@@ -90,11 +128,13 @@ class HarvardPinAbstractAuthBackend(object):
 
         # (2) Test the PGP message
         if not is_pgp_message_verified(lu):
+            self.err_pgp_msg_check = True
             msg('PGP message failed verification')
             return None
                     
         # (2a) check the app name
         if not lu['__authen_application'] in settings.HU_PIN_LOGIN_APP_NAMES:
+            self.err_app_name_check = True
             msg('app name failed verification: [%s]' % lu['__authen_application'])
             return None
         
@@ -104,20 +144,23 @@ class HarvardPinAbstractAuthBackend(object):
             if settings.DEBUG and remote_addr == '127.0.0.1':
                 pass
             else:
+                self.err_ip_check = True
                 msg('IP failed verification: url[%s] actual[%s]' % (lu['__authen_ip'], request.META.get('REMOTE_ADDR', 'unknown')) )
                 return None
         
-        # (2c) check that time not longer than 2 minutes old
+        # (2c) check that time not longer than 'x' seconds old
         # e.g. __authen_time=Wed Jan 11 09:50:16 EST 2012
         dt_pat = '%a %b %d %H:%M:%S EST %Y'
         datetime_obj = datetime.strptime(lu['__authen_time'], dt_pat)
         try:
             time_now = datetime.now()
             time_diff = time_now - datetime_obj
-            if time_diff.seconds < 0 or time_diff.seconds > 120:
-                msg('120 second rule failed verification: url[%s] system[%s]' % (lu['__authen_time'], time_now))
+            if time_diff.seconds < 0 or time_diff.seconds > self.get_expiration_check_seconds():
+                msg('%s second rule failed verification: url[%s] system[%s]' % (self.get_expiration_check_seconds(), lu['__authen_time'], time_now))
+                self.err_time_check = True
                 return None
         except:
+            self.err_time_check = True
             msg('time diff failed: url[%s]' % (lu['__authen_time']))
             return None
 
@@ -135,29 +178,34 @@ class HarvardPinAbstractAuthBackend(object):
 
 
 class HarvardPinSimpleAuthBackend(HarvardPinAbstractAuthBackend):
-    #supports_inactive_user = False
-    #supports_anonymous_user = False
-
+    """Created to test PIN when HU LDAP not configured.
+    
+    For a username, this uses a hash of the person's Harvard ID.
+    In addition, a dummy email is used."""
+    
     def get_or_create_user(self, lu):
         if lu is None:
             msg('user is info is None')
             return None
       
-        #username = hashlib.sha224(lu['__authen_huid']).hexdigest()
         username = lu.get('__authen_huid', None)
         if username is None:
-            msg('__authen_huid is None')            
+            self.err_huid_check = True
             return None
+            
+        try: 
+            hash_username = sha1(username).hexdigest()
+        except:
+            hash_username = md5.new(username).hexdigest()
     
         # (3) Retrieve user's credentials
         try:
             # Check if the user exists in Django's local database
-            user = User.objects.get(username=username)
+            user = User.objects.get(username=hash_username)
         except User.DoesNotExist:
             # Create a user in Django's local database
-            user = User.objects.create_user(username, email='anonymous@ok.com')
+            user = User.objects.create_user(hash_username, email='test@test_simple_auth.com')
             user.set_unusable_password()
-            user.is_staff = False
             user.save()
         
         user.backend = 'hu_pin_auth.auth_hu_pin_backend.HarvardPinSimpleAuthBackend' 

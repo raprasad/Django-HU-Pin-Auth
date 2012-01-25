@@ -5,16 +5,63 @@
 
 {% block content %}
 
-{% if pin_callback_handler and pin_callback_handler.has_err %}
-<p>{% if pin_callback_handler.err_account_not_active %}
-   Your account is not active. Please contact the system administrator.
-   {% else %}
-    Your log in failed.  Please make try again.
-    <p>If the problem persists, contact the system administrator.</p>
-   {% endif %} 
+<div style="border:1px solid #ff0000; padding:10px; width:500px; margin:20px 0;">Sorry!  There was an error with your login.
 
-</p>
+
+
+{# START: HU PIN Errors #}
+{% if err_no_request_obj or err_url_parse %}
+    Please try again. 
 {% endif %}
-<p><a href="../">{% trans 'Log in again' %}</a></p>
+
+{% if  err_pgp_msg_check %}Please try again.{% endif %}
+
+{% if  err_huid_check %}Please try again.{% endif %}
+
+{% if  err_app_name_check %}Please visit the <a href="https://www.pin1.harvard.edu/pin/logout" target="_blank">Harvard Pin Logout page</a> and try again.{% endif %}
+
+{% if  err_ip_check %}Your computer credentials do not match your login. 
+
+    <br /><br />Please visit the <a href="https://www.pin1.harvard.edu/pin/logout" target="_blank">Harvard Pin Logout page</a> and try again.
+{% endif %}
+
+{% if  err_time_check %}Your login has expired.   
+        <br /><br />Please visit the <a href="https://www.pin1.harvard.edu/pin/logout" target="_blank">Harvard Pin Logout page</a> and try again.
+{% endif %}
+{# END: HU PIN Errors #}
+{# START: DJANGO Errors #}
+    {% if err_no_email_in_hu_ldap %}
+        Your entry in Harvard's directory does not have an email address.
+        An email address is required to sign-in to this system.
+        <br /><br />Please contact <a href="mailto:directory_services@harvard.edu">directory_services@harvard.edu</a> regarding your entry.
+    {% endif %}
+    {% if err_huid_not_found_in_hu_ldap%}
+        Your ID was not found in the Harvard lookup system.  Please try to log in again.
+    {% endif %}            
+
+    {% if err_not_an_existing_user%}
+        Only existing users may use this system.<br /><br />
+        Please contact the administrator of this system regarding access.
+    {% endif %}            
+    
+    {% if err_account_not_active%}
+        Your account is inactive.<br /><br />
+        Please contact the administrator of this system.
+    {% endif %}            
+
+    {% if err_user_not_staff%}
+        You do not have permission to access this system.<br /><br />
+        Please contact the administrator of this system.
+    {% endif %}            
+
+    {% if err_user_not_superuser%}
+        You do not have permission to access this system.<br /><br />
+        Please contact the administrator of this system.
+    {% endif %}            
+
+{# END: DJANGO Errors #}
+
+</div>
+<p><a href="{% url admin:index %}">{% trans 'Log in again' %}</a></p>
 
 {% endblock %}
