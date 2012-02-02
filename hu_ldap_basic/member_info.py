@@ -6,7 +6,9 @@ sample use:
 
 raw_ldap_result = [('cn=RobNoName M Smith+uid=Smithaadfjldfjdfabcdefghijk123, ou=people, o=Harvard University Core, dc=huid, dc=harvard, dc=edu', {'co': ['United States'], 'uid': ['Smithaadfjldfjdfabcdefghijk123'], 'harvardEduPostalAddressInternal': [''], 'harvardeduschool': ['ECS', 'EXT'], 'generationQualifier': [''], 'harvardeduofficeaddressprivacy': ['5'], 'st': ['MA'], 'departmentNumber': ['1234567'], 'cn': ['RobNoName M Smith'], 'title': ['Some Title'], 'facsimileTelephoneNumber': [''], 'harvardeduidnumber': ['12345678'], 'harvardedufaxprivacy': ['5'], 'harvardEduFerpaPastStudentIndicator': ['FALSE'], 'harvardeduemployeeprivacy': ['5'], 'postalCode': ['02138'], 'mail': ['RobNoName_Smith@harvard.edu'], 'postalAddress': ['RobNoName M Smith$Harvard, Some Address$Cambridge MA 02138'], 'harvardeduimageprivacy': ['1'], 'harvardeduprimejobdn': ['cn=Smithaadfjldfjdfabcdefghijk123 JOB 0, ou=jobs, o=Harvard University Core, dc=huid, dc=harvard, dc=edu'], 'harvardedumailprivacy': ['5'], 'c': ['USA'], 'harvardedusuffixqualifier': [''], 'edupersonaffiliation': ['employee'], 'employeeNumber': ['12345678'], 'harvardeduregisteredsortname': ['Smith RobNoName M'], 'harvardEduDirectoryListing': ['1$+1 617 123 4567$V$O$D$Northwest Building 190.02$$5$E$O'], 'harvardedumiddlename': ['M'], 'harvardedustudentyear': [''], 'telephoneNumber': ['+1 617 495 5722'], 'harvardedudisplayaddress': ['Some Building 1123'], 'givenName': ['RobNoName'], 'displayName': [''], 'harvardEduHRDepartmentShortDescription': ['FAS'], 'harvardEduFerpaStatus': ['FALSE'], 'harvardeduphoneprivacy': ['5'], 'harvardedujobdn': ['cn=Smithaadfjldfjdfabcdefghijk123 JOB 0, ou=jobs, o=Harvard University Core, dc=huid, dc=harvard, dc=edu'], 'l': ['Cambridge'], 'personalTitle': [''], 'harvardeduregisteredname': ['RobNoName M Smith'], 'sn': ['Smith'], 'harvardEduOfficeInternalPostalCode': ['HIJKL09']})]
 
-> mi = MemberInfo(raw_ldap_result)
+> single_listing = raw_ldap_result[0]
+> distinguished_name, ldap_dict = single_listing 
+> mi = MemberInfo(ldap_dict)
 > mi.givenName
 RobNoName
 > mi.employeeNumber

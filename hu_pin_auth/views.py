@@ -12,7 +12,7 @@ from hu_pin_auth.pin_login_handler import PinLoginHandler
 def view_handle_pin_callback(request):
     print '-'*40
     print 'view_handle_pin_callback'
-    # if authentication is succesful, go to a specified 'next' link or deftaul to the admin
+    # if authentication is succesful, go to a specified 'next' link or default to the admin
     #
     if request.GET and request.GET.get('next', None) is not None:
         next = request.GET.get('next')

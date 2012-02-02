@@ -3,19 +3,18 @@ To work with HU PIN or other apps that require LDAP lookups
 """
 
 if __name__=='__main__':
-    import os, sys
-    sys.path.append('/Users/rprasad/mcb-git/Grant-Database-Finances/grant_financials')
+    import sys
+    sys.path.append('some dir')
     from django.core.management import setup_environ
     import settings
     setup_environ(settings)
 else:
-    import settings
+    from django.conf import settings
     
-from django.conf import settings
-    
-import ldap, sys
+import ldap
+import sys
 
-from member_info import MemberInfo
+from member_info import MemberInfo  # convenience class for accessing ldap values
 
 # Set LDAP options
 ldap.set_option(ldap.OPT_REFERRALS, 0)  # turn off referrals
@@ -27,21 +26,24 @@ ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)  # allow self
 CUSTOMER_NAME = settings.LDAP_CUSTOMER_NAME # username/id for binding to ldap server   
 CUSTOMER_PW =  settings.LDAP_CUSTOMER_PASSWORD  # password for binding to ldap server   
 
-def msg(m): print m
+def msg(m): 
+    if settings.DEBUG: print m
 def dashes(): msg('-'*40)
-def msgt(m): dashes(); msg(m); dashes()
+def msgt(m): dashes(); msg(m); 
 def msgx(m): dashes(); msg(m); print 'exiting'; sys.exit(0)
 
 class HUDirectorySearcher:
     """
-    Grab an instance then use the 'find person' method.
+    Performs and LDAP query and places the results, if any, in MemberInfo objects
+
     Searches by lname, fname, fname + lname, email, huid, etc, etc
     
     example:
+        >kwargs = { 'lname':'smith', 'fname':'mich*' }
         >searcher = HUDirectorySearcher()    # starts ldap connection
         >searcher.find_people(**kwargs)
 
-        returns: None or [MemberInfo1, MemberInfo2, etc]
+        returns: None or [MemberInfo object #1, MemberInfo object #2, etc]
     """
     def __init__(self):
         
@@ -51,6 +53,7 @@ class HUDirectorySearcher:
             self.ldap_url = 'ldaps://hu-ldap-test.harvard.edu'
         else:
             self.ldap_url = 'ldaps://hu-ldap.harvard.edu'
+
         self.ad_bind_usr = 'uid=%s, ou=applications,o=Harvard University Core,dc=huid,dc=harvard,dc=edu' % CUSTOMER_NAME
         self.ad_bind_pw = CUSTOMER_PW
     
@@ -58,19 +61,21 @@ class HUDirectorySearcher:
         
     def close_connection(self):
         if self.ldap_conn is None:
-            return None
+            msg('ldap connection not found')
+            return 
             
         self.ldap_conn.unbind_s()
-        
+        msg('connection closed.')
+
     def get_ldap_connection(self):
         
-        #msgt('(1) attempt to initialize url')        
+        msgt('(1) attempt to initialize url')        
         conn = ldap.initialize(self.ldap_url) 
-        #msg('url initialized')
+        msg('url initialized')
         
-        #msgt('(2) attempt to bind to server with CUSTOMER_NAME = "%s"' % CUSTOMER_NAME )
+        msgt('(2) attempt to bind to server with CUSTOMER_NAME = "%s"' % CUSTOMER_NAME )
         conn.simple_bind_s(self.ad_bind_usr, self.ad_bind_pw)
-        #msg('bind successful')
+        msg('bind successful')
         
         return conn
         
@@ -95,7 +100,7 @@ class HUDirectorySearcher:
         if len(filter_pairs) == 0:
             pass
             return
-            #msgx('None of these keywords found in search filter: %s'  %  '\n - '.join(kw_ad_attrs_dict.keys()) )
+            msgx('None of these keywords found in search filter: %s'  %  '\n - '.join(kw_ad_attrs_dict.keys()) )
         elif len(filter_pairs) == 1:
             search_filter = filter_pairs[0]
         else:
@@ -109,39 +114,49 @@ class HUDirectorySearcher:
         # search the people section of HU Core
         AD_SEARCH_DN = "ou=people, o=Harvard University Core, dc=huid, dc=harvard, dc=edu";
         #search_filter = '(&(givenName=r*)(sn=smith))'
-        #msg('using filter: %s' % search_filter)
+        msg('using filter: %s' % search_filter)
         
         try:
             results = self.ldap_conn.search_ext_s(self.AD_SEARCH_DN,ldap.SCOPE_SUBTREE, search_filter, FIELDS_TO_RETURN)  
         except UnicodeEncodeError:
-            #msg('ERROR: filter had UnicodeEncodeError')
+            msg('ERROR: filter had UnicodeEncodeError')
             return None
         
-        '''
-        #msg('search complete - raw results:')
+        """
+        msg('search complete - raw results:')
         dashes()
-        print results
+        msg(results)
         dashes()
-        #msg('formatted results')
+        msg('formatted results')
         dashes()
-        '''
-        
+        """
         members = []
         for idx, r in enumerate(results):
             cn, lu = r      
-            #msgt('(%s) %s' % (idx+1, cn))
-            #print lu
+            msgt('(%s) %s' % (idx+1, cn))
+            msg(lu)
             mi = MemberInfo(lu)     # convenience class from 'helper_classes.py'
             members.append(mi)
-            #mi.show()
+            mi.show()
        
         if members == []:
-            #msg('>> no results from search')
+            msg('>> no results from search')
             return None
         
         return members
         
         
+def show_usage():
+    print """Below are some command line samples.  
+
+Valid keywords: lname, fname, email, huid, uid
+
+>python hu_directory_search lname=smith fname=r*    
+>python hu_directory_search huid=12345678
+>python hu_directory_search uid=Smithaadfjldfjdfabcdefghijk123
+
+The keywords may be used alone or in combination. Feel free to add your own to the dict called "kw_ad_attrs_dict."
+"""
 
 if __name__=='__main__':
     if len(sys.argv) > 1:
@@ -150,14 +165,9 @@ if __name__=='__main__':
             if arg.find('=') > -1:
                 kw, val = arg.split('=')
                 lu.update({ kw:val})
+        searcher = HUDirectorySearcher() 
+        members = searcher.find_people(**lu)
+        searcher.close_connection()
     else:
-        lu = { 'lname' : 'prasad'
-                , 'fname': 'raman' }
-    
-    searcher = HUDirectorySearcher() 
-    #kwarg = eval('lname="prasad"')
-    members = searcher.find_people(**lu)
-    #if members is not None:
-    #    for idx, mi in enumerate(members): print idx+1, mi.show(); dashes()
-    searcher.close_connection()
- 
+        show_usage()
+        
