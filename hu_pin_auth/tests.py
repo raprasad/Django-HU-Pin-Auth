@@ -1,3 +1,4 @@
+# TO DO!
 import unittest
 from django.test import TestCase
 from django.contrib.auth.models import User
@@ -17,14 +18,11 @@ class PinHandlerTest(TestCase):
                             , 'restrict_to_staff':False \
                             , 'restrict_to_superusers':False}
 
-        pin_login_handler = PinLoginHandler(request, **access_dict)
+        #pin_login_handler = PinLoginHandler(request, **access_dict)
         
         #-------------------------------------------------------
-        msgt('check number of breadcrumb items, should be 3')
-        menu_builder.show_breadcrumb_items()
-        self.assertEqual(menu_builder.get_num_breadcrumbs(), 3)
-        msg('actual: [%s]' % menu_builder.get_num_breadcrumbs())
-
+        #self.assertEqual(menu_builder.get_num_breadcrumbs(), 3)
+        
         #-------------------------------------------------------
        
 

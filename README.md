@@ -5,7 +5,7 @@ By plugging the authentication backend into your django settings, the code will:
 	
 1. authenticate a user via Harvard Pin
 --  uses Pin 2 authentication for constructing the PGP-signed message
-2. upon authentication, look up the person's info via *HU LDAP
+2. upon authentication, look up the person's info via HU LDAP
 3. create a Django User object based on the HU LDAP information (username, last name, first name, email)
 
 ## Requirements / Packages
@@ -75,23 +75,15 @@ AUTHENTICATION_BACKENDS
 
 ### Log in
 
- - Add a link to use PIN for admin (or other login.) 
-
-- Example of link that was added to the django admin/login.html template. [overriding-admin-templates](https://docs.djangoproject.com/en/dev/ref/contrib/admin/#overriding-admin-templates)
-
-
-```<a href="https://www.pin1.harvard.edu/pin/authenticate?__authen_application=FAS_MY_DEPT_AUTH_DEV&next={% url admin:index %}"><u>USE PIN LOGIN</u></a>```
-    
+- Add a link to use PIN for admin (or other login.) 
+    - Example of link that was added to the django admin/login.html template. [overriding-admin-templates](https://docs.djangoproject.com/en/dev/ref/contrib/admin/#overriding-admin-templates)
     - Include your app name where it reads 'FAS_MY_DEPT_AUTH_DEV':
-    
+```<a href="https://www.pin1.harvard.edu/pin/authenticate?__authen_application=FAS_MY_DEPT_AUTH_DEV&next={% url admin:index %}"><u>USE PIN LOGIN</u></a>```
+    - Example may be found in file: hu_pin_auth/templates/admin/login.html
 
-- example in file: hu_pin_auth/templates/admin/login.html
-
-- In the example above, a successful log in redirects back to the admin index page, to change:
-
-- (a) Define 'next' in the url query string.  
-
-- (b) Rewrite your view to go to the appropriate page (see example in hu_pin_auth/views.py)
+- In the example above, a successful log in redirects back to the admin index page, to redirect to another page:
+    - (a) Define 'next' in the url query string.  
+    - (b) Rewrite your view to go to the appropriate page (see example in hu_pin_auth/views.py)
 
 
     
