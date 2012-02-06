@@ -1,14 +1,7 @@
 """
 To work with HU PIN or other apps that may use LDAP lookups
 
-I. DEFAULT: To run this script STANDALONE (w/o a Django settings file):
-    (A) Set 'USE_SETTINGS_IN_DJANGO_PROJECT' to False
-    (B) Under "Manually set LDAP credentials" below: manually set:
-        (1) LDAP_CUSTOMER_NAME 
-        (2) LDAP_CUSTOMER_PASSWORD 
-        (3) LDAP_SERVER 
-
-II. To use this with a Django Project
+I. DEFAULT: To use this with a Django Project
     (A) Below, set 'USE_SETTINGS_FROM_DJANGO_PROJECT' to True
     (B) Define these three variables in your settings file:
         (a) LDAP_CUSTOMER_NAME 
@@ -17,12 +10,19 @@ II. To use this with a Django Project
             test: ldaps://hu-ldap-test.harvard.edu
             prod: ldaps://hu-ldap.harvard.edu
 
+II. To run this script STANDALONE (w/o a Django settings file):
+    (A) Set 'USE_SETTINGS_IN_DJANGO_PROJECT' to False
+    (B) Under "Manually set LDAP credentials" below: manually set:
+        (1) LDAP_CUSTOMER_NAME 
+        (2) LDAP_CUSTOMER_PASSWORD 
+        (3) LDAP_SERVER 
+
 """
 import sys
 
 # True - Assumes LDAP Credentials are in an accessible Django 'settings' file
 # False - Run script standalone
-USE_SETTINGS_FROM_DJANGO_PROJECT = False
+USE_SETTINGS_FROM_DJANGO_PROJECT = True
 
 if USE_SETTINGS_FROM_DJANGO_PROJECT:
     if __name__=='__main__':
@@ -79,7 +79,7 @@ class HUDirectorySearcher:
 
         returns: None or [MemberInfo object #1, MemberInfo object #2, etc]
     """
-    def __init__(self, show_debug=True):
+    def __init__(self, show_debug=False):
         
         self.AD_SEARCH_DN = "ou=people, o=Harvard University Core, dc=huid, dc=harvard, dc=edu";
         
@@ -88,7 +88,7 @@ class HUDirectorySearcher:
         self.ldap_url = LDAP_SERVER
         
         self.ad_bind_usr = 'uid=%s, ou=applications,o=Harvard University Core,dc=huid,dc=harvard,dc=edu' % LDAP_CUSTOMER_NAME
-        self.ad_bind_pw = LDAP_CUSTOMER_PASSWORD
+        self.ad_bind_password = LDAP_CUSTOMER_PASSWORD
     
         self.ldap_conn = self.get_ldap_connection()
     
@@ -116,7 +116,7 @@ class HUDirectorySearcher:
         
         self.msgt('(2) attempt to bind to server with LDAP_CUSTOMER_NAME = "%s"' % LDAP_CUSTOMER_NAME )
         try:
-            conn.simple_bind_s(self.ad_bind_usr, self.ad_bind_pw)
+            conn.simple_bind_s(self.ad_bind_usr, self.ad_bind_password)
         except ldap.NO_SUCH_OBJECT, e:
             raise ValueError('\nLdap error NO_SUCH_OBJECT\nCould be bad username: "%s"):\n%s\n' % (self.ad_bind_usr, e))
         except ldap.INVALID_CREDENTIALS, e:
@@ -124,8 +124,8 @@ class HUDirectorySearcher:
         except ldap.SERVER_DOWN, e:
             raise ValueError('\nLdap error SERVER_DOWN\nCheck server url: %s:\n%s\n' % (self.ldap_url, e))
         except:
-            print "Unexpected error:", sys.exc_info()[0]
-            raise
+            raise ValueError('Unexpected error: %s' % sys.exc_info()[0])
+            
 
         self.msg('bind successful')
         
@@ -171,7 +171,9 @@ class HUDirectorySearcher:
         except UnicodeEncodeError:
             self.msg('ERROR: filter had UnicodeEncodeError')
             return None
-        
+        except:
+            raise ValueError('ldap search. find_people. Unexpected error: %s' % sys.exc_info()[0])
+            
         
         self.msg('search complete - raw results:')
         self.msgt(results)

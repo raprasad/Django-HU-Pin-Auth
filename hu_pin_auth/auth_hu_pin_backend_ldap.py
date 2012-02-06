@@ -4,15 +4,14 @@ from urlparse import urlparse, parse_qs
 import time
 import hashlib
 import gnupg    # http://code.google.com/p/python-gnupg/
-from textwrap import dedent
 from datetime import datetime
 from django.template.defaultfilters import slugify
 
-from hu_pin_auth.auth_hu_pin_backend import HarvardPinAbstractAuthBackend
+from hu_pin_auth.auth_hu_pin_backend import HarvardPinAuthBackendBase
 from hu_ldap_basic.hu_directory_search import HUDirectorySearcher    
 
 
-class HarvardPinWithLdapAuthBackend(HarvardPinAbstractAuthBackend):
+class HarvardPinWithLdapAuthBackend(HarvardPinAuthBackendBase):
     """This authentication backend handles callbacks after people have logged with a Harvard Pin.
     
     The "token" passed to the authenticate message is the callback url returned from the HU authentication system, including the GET arguments.
@@ -20,9 +19,8 @@ class HarvardPinWithLdapAuthBackend(HarvardPinAbstractAuthBackend):
     Note: username is a slug of the email in the pin system
     
     """
-    
     def __init__(self, **kwargs):
-        HarvardPinAbstractAuthBackend.__init__(self)
+        HarvardPinAuthBackendBase.__init__(self)    # init superclass
         
         # Access attributes
         # Default, restrict to active, existing users who are staff
@@ -50,13 +48,13 @@ class HarvardPinWithLdapAuthBackend(HarvardPinAbstractAuthBackend):
             
     def get_or_create_user(self, lu):
         if lu is None:
-            msg('user is info is None')
+            self.err_url_lookup_vals_not_in_dict = True
             return None
             
         #username = hashlib.sha224(lu['__authen_huid']).hexdigest()
         huid = lu.get('__authen_huid', None)
         if huid is None:
-            msg('__authen_huid is None')            
+            self.err_huid_not_in_callback_url = True
             return None
     
         searcher = HUDirectorySearcher() 

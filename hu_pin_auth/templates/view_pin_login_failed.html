@@ -5,36 +5,58 @@
 
 {% block content %}
 
-<div style="border:1px solid #ff0000; padding:10px; width:500px; margin:20px 0;">Sorry!  There was an error with your login.
+<div style="border:1px solid #ff0000; padding:10px; width:500px; margin:20px 0;">
+    Sorry!  There was an error with your login.<br /><br />
 
-
-
-{# START: HU PIN Errors #}
 {% if err_no_request_obj or err_url_parse %}
+    <!-- bad request or url -->
     Please try again. 
 {% endif %}
 
-{% if  err_pgp_msg_check %}Please try again.{% endif %}
+{% comment %}
+<!-- START: HU PIN login error checks -->
+{% endcomment %}
+    {% if err_pgp_msg_check %}Please try again.{% endif %}
 
-{% if  err_huid_check %}Please try again.{% endif %}
+    {% if err_huid_not_in_callback_url %}Please try again.{% endif %}
 
-{% if  err_app_name_check %}Please visit the <a href="https://www.pin1.harvard.edu/pin/logout" target="_blank">Harvard Pin Logout page</a> and try again.{% endif %}
+    {% if err_url_lookup_vals_not_in_dict %}Please try again.{% endif %}
 
-{% if  err_ip_check %}Your computer credentials do not match your login. 
+    {% if  err_app_name_check %}
+        Please visit the 
+        <a href="https://www.pin1.harvard.edu/pin/logout" target="_blank">Harvard Pin Logout page</a>
+        and try again.
+    {% endif %}
 
-    <br /><br />Please visit the <a href="https://www.pin1.harvard.edu/pin/logout" target="_blank">Harvard Pin Logout page</a> and try again.
-{% endif %}
+    {% if  err_ip_check %}
+        Your computer credentials do not match your login. 
+        <p>Please visit the 
+            <a href="https://www.pin1.harvard.edu/pin/logout" target="_blank">Harvard Pin Logout page</a> 
+            and try again.</p>
+    {% endif %}
 
-{% if  err_time_check %}Your login has expired.   
-        <br /><br />Please visit the <a href="https://www.pin1.harvard.edu/pin/logout" target="_blank">Harvard Pin Logout page</a> and try again.
-{% endif %}
-{# END: HU PIN Errors #}
-{# START: DJANGO Errors #}
+    {% if  err_time_check %}
+        Your login has expired.   
+        <p>Please visit the 
+            <a href="https://www.pin1.harvard.edu/pin/logout" target="_blank">Harvard Pin Logout page</a> 
+            and try again.
+    {% endif %}
+{% comment %}
+<!-- END: HU PIN login error checks -->
+{% endcomment %}
+
+{% comment %}
+<!-- START: Django auth Errors -->
+{% endcomment %}
+
     {% if err_no_email_in_hu_ldap %}
         Your entry in Harvard's directory does not have an email address.
         An email address is required to sign-in to this system.
-        <br /><br />Please contact <a href="mailto:directory_services@harvard.edu">directory_services@harvard.edu</a> regarding your entry.
+        <p>Please contact 
+        <a href="mailto:directory_services@harvard.edu">directory_services@harvard.edu</a>
+        regarding your entry.</p>
     {% endif %}
+    
     {% if err_huid_not_found_in_hu_ldap%}
         Your ID was not found in the Harvard lookup system.  Please try to log in again.
     {% endif %}            
@@ -58,10 +80,12 @@
         You do not have permission to access this system.<br /><br />
         Please contact the administrator of this system.
     {% endif %}            
-
-{# END: DJANGO Errors #}
-
+{% comment %}
+<!-- END: Django auth Errors -->
+{% endcomment %}
 </div>
+
 <p><a href="{% url admin:index %}">{% trans 'Log in again' %}</a></p>
+<p><a href="https://www.pin1.harvard.edu/pin/logout" target="_blank">Harvard Pin Logout</a></p>
 
 {% endblock %}

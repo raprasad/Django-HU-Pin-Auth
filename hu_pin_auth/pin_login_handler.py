@@ -16,6 +16,8 @@ class PinLoginHandler:
         err_dict = pin_login_handler.get_error_dict()   # get error lookup for use in template
         return render_to_response('template_dir/login_failed.html', err_dict, context_instance=RequestContext(request))
 
+    (i) Sample file: see hu_pin_auth/views.py
+    
     ----------------------------
     sample usage in a template, if error occurred
     ----------------------------    
@@ -27,17 +29,23 @@ class PinLoginHandler:
         <p>Return to the <a href="">log in page</a>.</p>
     {% endif %}
     
+    (i) Sample file: see templates/view_pin_login_failed.html
+    
+    
     ---------------------------- 
-    example of using access_setting in the init   
-    Access settings are Django specific and are checked AFTER a successful HU Pin login
+    # How Django handles authentication after pin is verfied. 
+    # 'access_settings' are specific to how Django handles its User objects
+    # (Again, these permissions are checked AFTER a successful HU Pin login)
+    #
+    # example of using 'access_settings' in the init   
     ----------------------------    
     # restrict to active, staff users in Django
-    access_dict = { 'restrict_to_existing_users':True \
+    access_settings = { 'restrict_to_existing_users':True \
                         , 'restrict_to_active_users':True \
                         , 'restrict_to_staff':False \
                         , 'restrict_to_superusers':False}
                         
-    pin_login_handler = PinLoginHandler(request, **access_dict)
+    pin_login_handler = PinLoginHandler(request, **access_settings)
     """
     def __init__(self, request, **access_settings):
         self.user = None
@@ -61,17 +69,15 @@ class PinLoginHandler:
         return self.user
         
     def handle_authorization(self, request):
-        print '-' * 40
-        print 'PinLoginHandler.handle_authorization'
-        print 'request: ', request
         self.user = None
         
         if request is None:
-            self.mark_err_as_true(self.err_no_request_object)
-            return 
-       
+            pass    # This error is handled and marked in the authorization_backend below
+
         if self.access_settings is not None:
             authorization_backend  = HarvardPinWithLdapAuthBackend(**self.access_settings)    
+        else:
+            authorization_backend  = HarvardPinWithLdapAuthBackend()
         
         self.user = authorization_backend.authenticate(request)
         if self.user:

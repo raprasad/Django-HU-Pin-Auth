@@ -9,7 +9,6 @@ except:
 
 
 import gnupg
-from textwrap import dedent
 from datetime import datetime
 
 def msg(m): print m
@@ -17,16 +16,19 @@ def dashes(): msg('-'*40)
 def msgt(m): dashes(); msg(m); dashes()
 def msgx(m): dashes(); msg(m); print 'exiting'; sys.exit(0)
 
-AUTH_URL_CALLBACK_KEYWORDS = ('__authen_pgp_signature' , '__authen_time', '__authen_application', '__authen_ip', '__authen_pgp_version', '__authen_huid' )
+AUTH_URL_CALLBACK_KEYWORDS = ('__authen_pgp_signature' 
+                            , '__authen_time'
+                            , '__authen_application'
+                            , '__authen_ip'
+                            , '__authen_pgp_version'
+                            , '__authen_huid' )
 
 
 def is_pgp_message_verified(lu):
     """Test the PGP signature according to HU specs. 
     document: PIN2 Developer Resources.pdf
     lu: dict containing values for AUTH_URL_CALLBACK_KEYWORDS """
-    print '-'  * 40
-    print 'is_pgp_message_verified', lu
-    print '-'  * 40
+    #msgt('is_pgp_message_verified:\n %s' % lu)
     
     if lu is None:
         return None
@@ -63,7 +65,7 @@ Version: 5.0
     
 
     
-class HarvardPinAbstractAuthBackend(object):
+class HarvardPinAuthBackendBase(object):
     """This authentication backend handles callbacks after people have logged with a Harvard Pin.
     
     The "token" passed to the authenticate message is the callback url returned from the HU authentication system, including the GET arguments.
@@ -81,8 +83,9 @@ class HarvardPinAbstractAuthBackend(object):
         # These flags may later be used in templates
         self.error_check_attribute_names = ['err_no_request_obj'\
                                 , 'err_url_parse'\
+                                , 'err_url_lookup_vals_not_in_dict'\
                                 , 'err_pgp_msg_check'\
-                                , 'err_huid_check'\
+                                , 'err_huid_not_in_callback_url'\
                                 , 'err_app_name_check'\
                                 , 'err_ip_check'\
                                 , 'err_time_check' ]
@@ -177,7 +180,7 @@ class HarvardPinAbstractAuthBackend(object):
             return None
 
 
-class HarvardPinSimpleAuthBackend(HarvardPinAbstractAuthBackend):
+class HarvardPinSimpleAuthBackend(HarvardPinAuthBackendBase):
     """Created to test PIN when HU LDAP not configured.
     
     For a username, this uses a hash of the person's Harvard ID.
@@ -185,12 +188,12 @@ class HarvardPinSimpleAuthBackend(HarvardPinAbstractAuthBackend):
     
     def get_or_create_user(self, lu):
         if lu is None:
-            msg('user is info is None')
+            self.err_url_lookup_vals_not_in_dict = True
             return None
       
         username = lu.get('__authen_huid', None)
         if username is None:
-            self.err_huid_check = True
+            self.err_huid_not_in_callback_url = True
             return None
             
         try: 
@@ -204,7 +207,7 @@ class HarvardPinSimpleAuthBackend(HarvardPinAbstractAuthBackend):
             user = User.objects.get(username=hash_username)
         except User.DoesNotExist:
             # Create a user in Django's local database
-            user = User.objects.create_user(hash_username, email='test@test_simple_auth.com')
+            user = User.objects.create_user(hash_username, email='sham_email@test_simple_auth.com')
             user.set_unusable_password()
             user.save()
         
