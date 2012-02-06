@@ -46,32 +46,32 @@ AUTHENTICATION_BACKENDS
 
 ### For the settings.py file
 
-    - Add "HU_PIN_LOGIN_APP_NAMES" tuple with your app name.  This is the name given when you [Register a Pin 2 Application](http://reference.pin.harvard.edu/dev-registration)
-        - example: HU_PIN_LOGIN_APP_NAMES = ('FAS_MCB_AUTH_DEV',)
-        
-    - Define these variables for LDAP authentication
-        - LDAP_CUSTOMER_NAME 
-            - e.g. LDAP_CUSTOMER_NAME = 'fas_dept'
-        - LDAP_CUSTOMER_PASSWORD
-            - e.g. LDAP_CUSTOMER_PASSWORD = 'MR-potato-head-123'
-        - LDAP_SERVER 
-            - e.g. LDAP_SERVER = 'ldaps://hu-ldap-test.harvard.edu'
-           
+- Add "HU_PIN_LOGIN_APP_NAMES" tuple with your app name.  This is the name given when you [Register a Pin 2 Application](http://reference.pin.harvard.edu/dev-registration)
+    - example: HU_PIN_LOGIN_APP_NAMES = ('FAS_MCB_AUTH_DEV',)
+    
+- Define these variables for LDAP authentication
+    - LDAP_CUSTOMER_NAME 
+        - e.g. LDAP_CUSTOMER_NAME = 'fas_dept'
+    - LDAP_CUSTOMER_PASSWORD
+        - e.g. LDAP_CUSTOMER_PASSWORD = 'MR-potato-head-123'
+    - LDAP_SERVER 
+        - e.g. LDAP_SERVER = 'ldaps://hu-ldap-test.harvard.edu'
+       
 
-### Pin callback url (urls.py + view + errors in template)
-    - Include a "view_handle_pin_callback" url to match the url you specified in your [Pin 2 Registration](http://reference.pin.harvard.edu/dev-registration)
-    - An example callback url and view may be seen in:
+## Pin callback url (urls.py + view + errors in template)
+- Include a "view_handle_pin_callback" url to match the url you specified in your [Pin 2 Registration](http://reference.pin.harvard.edu/dev-registration)
+- An example callback url and view may be seen in:
 
-        - hu_pin_auth/urls.py: view_handle_pin_callback
-            - ex/ url(r'^hu_auth/callback/$', 'view_handle_pin_callback', name='view_handle_pin_callback' ),
+    - hu_pin_auth/urls.py: view_handle_pin_callback
+        - ex/ url(r'^hu_auth/callback/$', 'view_handle_pin_callback', name='view_handle_pin_callback' ),
 
-        - hu_pin_auth/views.py: def view_handle_pin_callback(request): 
-        
-    - For potential errors:
-        - hu_pin_auth/templates/view_pin_login_failed.html
+    - hu_pin_auth/views.py: def view_handle_pin_callback(request): 
+    
+- For potential errors:
+    - hu_pin_auth/templates/view_pin_login_failed.html
 
-    - Log out
-        - hu_pin_auth/templates/registration/logout.html (includes link to the HU Pin logout page)
+- Log out
+    - hu_pin_auth/templates/registration/logout.html (includes link to the HU Pin logout page)
 
 ### Log in
 
