@@ -58,7 +58,7 @@ AUTHENTICATION_BACKENDS
         - e.g. LDAP_SERVER = 'ldaps://hu-ldap-test.harvard.edu'
        
 
-## Pin callback url (urls.py + view + errors in template)
+### Pin callback url (urls.py + view + errors in template)
 - Include a "view_handle_pin_callback" url to match the url you specified in your [Pin 2 Registration](http://reference.pin.harvard.edu/dev-registration)
 - An example callback url and view may be seen in:
 
@@ -75,21 +75,23 @@ AUTHENTICATION_BACKENDS
 
 ### Log in
 
-    - Add a link to use PIN for admin (or other login.) 
+ - Add a link to use PIN for admin (or other login.) 
 
-    - Example of link that was added to the django admin/login.html template. [overriding-admin-templates](https://docs.djangoproject.com/en/dev/ref/contrib/admin/#overriding-admin-templates)
+- Example of link that was added to the django admin/login.html template. [overriding-admin-templates](https://docs.djangoproject.com/en/dev/ref/contrib/admin/#overriding-admin-templates)
 
-        - Include your app name where it reads 'FAS_MY_DEPT_AUTH_DEV':
-```   
-        <a href="https://www.pin1.harvard.edu/pin/authenticate?__authen_application=FAS_MY_DEPT_AUTH_DEV&next={% url admin:index %}"><u>USE PIN LOGIN</u></a>
-````
-    - example in file: hu_pin_auth/templates/admin/login.html
+
+```<a href="https://www.pin1.harvard.edu/pin/authenticate?__authen_application=FAS_MY_DEPT_AUTH_DEV&next={% url admin:index %}"><u>USE PIN LOGIN</u></a>```
+    
+    - Include your app name where it reads 'FAS_MY_DEPT_AUTH_DEV':
+    
+
+- example in file: hu_pin_auth/templates/admin/login.html
 
 - In the example above, a successful log in redirects back to the admin index page, to change:
 
-    - (a) Define 'next' in the url query string.  
+- (a) Define 'next' in the url query string.  
 
-    - (b) Rewrite your view to go to the appropriate page (see example in hu_pin_auth/views.py)
-    
-    
+- (b) Rewrite your view to go to the appropriate page (see example in hu_pin_auth/views.py)
+
+
     
