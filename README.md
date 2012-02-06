@@ -39,13 +39,13 @@ By plugging the authentication backend into your django settings, the code will:
 AUTHENTICATION_BACKENDS 
 
     - example with standard backend + HU PIN backend:
-```
-    AUTHENTICATION_BACKENDS = (   'django.contrib.auth.backends.ModelBackend',
+        - AUTHENTICATION_BACKENDS = (   'django.contrib.auth.backends.ModelBackend',
                                   'hu_pin_auth.auth_hu_pin_backend_ldap.HarvardPinWithLdapAuthBackend',
                                   )
-```
+
 
 ### For the settings.py file
+
     - Add "HU_PIN_LOGIN_APP_NAMES" tuple with your app name.  This is the name given when you [Register a Pin 2 Application](http://reference.pin.harvard.edu/dev-registration)
         - example: HU_PIN_LOGIN_APP_NAMES = ('FAS_MCB_AUTH_DEV',)
         
