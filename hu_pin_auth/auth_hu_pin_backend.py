@@ -29,13 +29,15 @@ def is_pgp_message_verified(lu):
     document: PIN2 Developer Resources.pdf
     lu: dict containing values for AUTH_URL_CALLBACK_KEYWORDS """
     #msgt('is_pgp_message_verified:\n %s' % lu)
-    
+    print lu
     if lu is None:
         return None
         
     # make sure all the keywords are in the dict
     for kw in AUTH_URL_CALLBACK_KEYWORDS:
+        print kw
         if kw not in lu.keys():
+            print 'FAIL: ', kw
             return None
         
     # create the token as described in 
@@ -54,10 +56,12 @@ Version: 5.0
 
 %s
 -----END PGP SIGNATURE-----""" % (token, lu['__authen_pgp_signature'])
-
+    print 'pre-make gnupu'
     gpg_obj = gnupg.GPG()
+    print 'pre-verify gnupu'
 
     v = gpg_obj.verify(pgp_msg)
+    print 'v', v
     if v is not None and v.valid==True:
         return True
         
