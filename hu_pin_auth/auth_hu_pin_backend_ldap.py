@@ -101,7 +101,6 @@ class HarvardPinWithLdapAuthBackend(HarvardPinAuthBackendBase):
         user.last_name = member.get_or_blank('sn')
         user.first_name = member.get_or_blank('givenName')
         user.email = member.mail
-        user.is_staff = True
         
         user.set_unusable_password()
         user.save()
