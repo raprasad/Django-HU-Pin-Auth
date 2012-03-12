@@ -29,15 +29,12 @@ def is_pgp_message_verified(lu):
     document: PIN2 Developer Resources.pdf
     lu: dict containing values for AUTH_URL_CALLBACK_KEYWORDS """
     #msgt('is_pgp_message_verified:\n %s' % lu)
-    print lu
     if lu is None:
         return None
         
     # make sure all the keywords are in the dict
     for kw in AUTH_URL_CALLBACK_KEYWORDS:
-        print kw
         if kw not in lu.keys():
-            print 'FAIL: ', kw
             return None
         
     # create the token as described in 
@@ -56,15 +53,21 @@ Version: 5.0
 
 %s
 -----END PGP SIGNATURE-----""" % (token, lu['__authen_pgp_signature'])
-    print 'pre-make gnupu'
-    gpg_obj = gnupg.GPG()
-    print 'pre-verify gnupu'
-
+    
+    if settings.GNUPG_HOME is not None:
+        gpg_obj = gnupg.GPG(gnupghome=settings.GNUPG_HOME)
+    else:
+        gpg_obj = gnupg.GPG()
+        
     v = gpg_obj.verify(pgp_msg)
-    print 'v', v
     if v is not None and v.valid==True:
         return True
-        
+    print '-' * 30
+    print lu
+    print '-' * 30
+    print pgp_msg
+    print '-' * 30
+    print v.stderr
     return False
     
 
@@ -157,8 +160,9 @@ class HarvardPinAuthBackendBase(object):
         
         # (2c) check that time not longer than 'x' seconds old
         # e.g. __authen_time=Wed Jan 11 09:50:16 EST 2012
+        authen_time = lu['__authen_time'].replace('EDT ', 'EST ')
         dt_pat = '%a %b %d %H:%M:%S EST %Y'
-        datetime_obj = datetime.strptime(lu['__authen_time'], dt_pat)
+        datetime_obj = datetime.strptime(authen_time, dt_pat)
         try:
             time_now = datetime.now()
             time_diff = time_now - datetime_obj

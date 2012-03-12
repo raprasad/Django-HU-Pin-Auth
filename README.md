@@ -40,9 +40,10 @@ AUTHENTICATION_BACKENDS
 
     - example with standard backend + HU PIN backend:
         - AUTHENTICATION_BACKENDS = (   'django.contrib.auth.backends.ModelBackend',
-                                  'hu_pin_auth.auth_hu_pin_backend_ldap.HarvardPinWithLdapAuthBackend',
+                             'hu_pin_auth.auth_hu_pin_backend_ldap.HarvardPinWithLdapAuthBackend',
                                   )
 
+- In settings.py, add GNUPG_HOME variable.  Used by python-gnupg as described [here](http://packages.python.org/python-gnupg/#getting-started)
 
 ### For the settings.py file
 
