@@ -66,7 +66,7 @@ class HarvardPinWithLdapAuthBackend(HarvardPinAuthBackendBase):
             if member.mail is None:
                 self.err_no_email_in_hu_ldap = True
                 return None
-            username = member.mail
+            username = member.mail[:30]
         else:
             self.err_huid_not_found_in_hu_ldap = True
             return None
@@ -100,7 +100,7 @@ class HarvardPinWithLdapAuthBackend(HarvardPinAuthBackendBase):
         # update last name, first name, and email
         user.last_name = member.get_or_blank('sn')
         user.first_name = member.get_or_blank('givenName')
-        user.email = member.mail
+        user.email = member.mail[:30]   # usernames are max 30 chars
         
         user.set_unusable_password()
         user.save()
