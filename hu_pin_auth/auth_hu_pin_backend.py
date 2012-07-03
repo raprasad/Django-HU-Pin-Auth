@@ -24,18 +24,23 @@ AUTH_URL_CALLBACK_KEYWORDS = ('__authen_pgp_signature'
                             , '__authen_huid' )
 
 
+class PGPVerifyResult:
+    def __init__(self, verified, err_msg=None):
+        self.is_verified = verified
+        self.err_msg = err_msg
+        
 def is_pgp_message_verified(lu):
     """Test the PGP signature according to HU specs. 
     document: PIN2 Developer Resources.pdf
-    lu: dict containing values for AUTH_URL_CALLBACK_KEYWORDS """
+    lu: dict containing values for AUTH_URL_CALLBACK_KEYWORDS"""
     #msgt('is_pgp_message_verified:\n %s' % lu)
     if lu is None:
-        return None
+        return PGPVerifyResult(False, '1 - No url params to check')
         
     # make sure all the keywords are in the dict
     for kw in AUTH_URL_CALLBACK_KEYWORDS:
         if kw not in lu.keys():
-            return None
+            return PGPVerifyResult(False, '2 - Param missing in url: %s' % kw)
         
     # create the token as described in 
     token = '%s|%s||%s|%s' % (lu['__authen_application']\
@@ -61,14 +66,18 @@ Version: 5.0
         
     v = gpg_obj.verify(pgp_msg)
     if v is not None and v.valid==True:
-        return True
-    print '-' * 30
-    print lu
-    print '-' * 30
-    print pgp_msg
-    print '-' * 30
-    print v.stderr
-    return False
+        return PGPVerifyResult(True)
+        
+    return PGPVerifyResult(False,\
+        """3 - Verify failed. pgp msg:\n%s\n\n%s\nlookup params: %s\n\n%s""" % (pgp_msg,'-' * 30, lu, v.stderr) )
+    
+    #print '-' * 30
+    #print lu
+    #print '-' * 30
+    #print pgp_msg
+    #print '-' * 30
+    #print v.stderr
+    #return False
     
 
     
@@ -92,6 +101,7 @@ class HarvardPinAuthBackendBase(object):
                                 , 'err_url_parse'\
                                 , 'err_url_lookup_vals_not_in_dict'\
                                 , 'err_pgp_msg_check'\
+                                , 'err_pgp_msg'\
                                 , 'err_huid_not_in_callback_url'\
                                 , 'err_app_name_check'\
                                 , 'err_ip_check'\
@@ -137,8 +147,11 @@ class HarvardPinAuthBackendBase(object):
             lu.update({k: v[0].strip()})
 
         # (2) Test the PGP message
-        if not is_pgp_message_verified(lu):
+        pgp_verify_result =  is_pgp_message_verified(lu)
+        #(pgp_msg_verified, err_msg) =  is_pgp_message_verified(lu)
+        if not pgp_verify_result.is_verified:
             self.err_pgp_msg_check = True
+            self.err_pgp_msg = pgp_verify_result.err_msg
             msg('PGP message failed verification')
             return None
                     
