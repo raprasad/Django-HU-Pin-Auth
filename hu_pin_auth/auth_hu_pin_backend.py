@@ -162,13 +162,17 @@ class HarvardPinAuthBackendBase(object):
             return None
         
         # (2b) verify the IP
-        remote_addr = request.META.get('REMOTE_ADDR', None)
-        if not lu['__authen_ip'] == remote_addr:
+        remote_addr = request.META.get('REMOTE_ADDR', 'unknown')
+        auth_ip = str(lu['__authen_ip'])
+        if not auth_ip == remote_addr and (not remote_addr == 'unknown'):
             if settings.DEBUG and remote_addr == '127.0.0.1':
+                pass
+            elif auth_ip.startswith('10.') and (remote_addr.startswith('140.247.') or remote_addr.startswith('128.103.') ):
+                # allow if 10. and other address from harvard
                 pass
             else:
                 self.err_ip_check = True
-                msg('IP failed verification: url[%s] actual[%s]' % (lu['__authen_ip'], request.META.get('REMOTE_ADDR', 'unknown')) )
+                msg('IP failed verification: url[%s] actual[%s]' % (auth_ip, remote_addr) )
                 return None
         
         # (2c) check that time not longer than 'x' seconds old
