@@ -100,7 +100,7 @@ class HarvardPinWithLdapAuthBackend(HarvardPinAuthBackendBase):
         # update last name, first name, and email
         user.last_name = member.get_or_blank('sn')
         user.first_name = member.get_or_blank('givenName')
-        user.email = member.mail[:30]   # usernames are max 30 chars
+        user.email = member.mail  # usernames are max 30 chars
         
         user.set_unusable_password()
         user.save()
