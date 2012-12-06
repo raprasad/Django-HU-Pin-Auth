@@ -1,5 +1,6 @@
 *.pyc
 
-
+hu_authz/test*.txt
 test_notes/*
 log/*
+*/gpg-test/*
