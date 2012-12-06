@@ -1,10 +1,10 @@
 """
 When given an AuthZ Token, validate layers 1 through 4
 """
+import os
 from urlparse import urlparse, parse_qs
-import time
 from hashlib import sha1
-import urllib, urllib2
+import urllib
 import gnupg
 from datetime import datetime
 
@@ -29,12 +29,13 @@ URL_KEY_AZP_TOKEN = '_azp_token'
 TEST_AZP_MSG = """https://adminapps.mcb.harvard.edu/mcb-grad/hu_azp/callback?_azp_token=-----BEGIN+PGP+MESSAGE-----%0D%0AVersion%3A+Cryptix+OpenPGP+0.20050418%0D%0A%0D%0AhQEMA%2FVD%2FGQNXDZ2AQf%2FdxB7qnk0mzZIwm3sU0wfWmfsj2FU5iiVsUdbK%2FR6Bw0B%0D%0AHNbNgSikQvYGJ0HZ5wd%2BxY3nxODidn2YPoXyUvqzXa2pWl1hzS2Z1iN9e%2BcCoT6l%0D%0AlLG5jVBqRybajm5yQ5R7Muk6WQ1S0gN6xaudo%2Fv84V%2FkuIQxLP58oxx%2Fmxxzbw79%0D%0Av1nGlsc%2BuB7vEfoxj8gMSIuLMHzoqCZkoQyu5bmUmt6q1a%2Bg8MYxN39QelvG5ppJ%0D%0AHH0Ik9fgZVz9bYKWabHRCxmHWSdvDWnTGqnu3FL6sJ2G7U8422HDN%2B3o4rNXiTsb%0D%0AOaNmZ%2FKVPNtYz3IaKIgldwLLisTDqGA9JxBxaIacIKUBLNIC34%2BzTMJjh%2B50MrzD%0D%0Agksm7aE0F5GGta4rrJO7d0qCvZTm9GFeFWyifvY2CCuWr3S40nXeR1LyNH8Qew95%0D%0A%2Fg%2BIsXinykDSneFBAo7SyTyG83%2B660wkuyKPLU91bL1HEqj7g0NowNla3yTCJcVB%0D%0A8efShTkTc91Rbx%2BlK7Z%2BRfh3ONXqWNzTSyK64vFsNB%2BF92Es%2BUjPtfzoXJal7g%2Bw%0D%0A7%2FfeuKdAb9ZczQ2q9wK1VNFyq%2BgJvpSpqQrEgeKVAWDOY2hn9RHup0k%2BUFFnNbEv%0D%0AyVktPgsbseVveqofFHy7osdEHoJ%2BQUnTSKiR7DY88NBbIItx3IFRXGB2H6ZN4WtB%0D%0AXxK%2BpLew8y19QUOiym9C73NmzxmHiIs9nmDb7bIDQyR3KCsnilr1F7jOO3y%2FqQ%3D%3D%0D%0A%3DKqhA%0D%0A-----END+PGP+MESSAGE-----%0D%0A"""
 
 class AuthZChecker:
-    def __init__(self, url_full_path=TEST_AZP_MSG, app_name='FAS_FCOR_MCB_GRDB_AUTHZ', user_request_ip='140.247.10.93'):
+    def __init__(self, url_full_path=TEST_AZP_MSG, app_names=['FAS_FCOR_MCB_GRDB_AUTHZ'], user_request_ip='140.247.10.93', gnupghome='/Users/raprasad/projects/mcb-git/Django-HU-Pin-Auth/hu_authzproxy/gpg-test'):
         self.expiration_time_seconds = 2 * 60 # 2 minutes until PGP log in message expires 
         self.url_full_path = url_full_path
-        self.app_name = app_name
+        self.app_names = app_names
         self.user_request_ip = user_request_ip
-
+        self.gnupghome = gnupghome
+        
         self.custom_attributes = None
         self.user_fname = None
         self.user_lname = None
@@ -44,7 +45,7 @@ class AuthZChecker:
         self.url_dict = None
         
         self.err_msgs = []
-        self.err_attrs = ['err_url_parse', 'err_no_azp_token', 'err_layer1_decrypt_failed', 'err_layer2_decrypt_failed', 'err_layer2_signature_fail', 'err_layer3_not_two_parts', 'err_layer3_attribute_data_part_fail', 'err_layer3_attribute_value_fail',  'err_layer3_authen_data_part_fail', 'err_layer4_app_name_not_matched', 'err_layer4_ip_check_failed', 'err_layer4_token_time_elapsed', 'err_layer4_time_check_exception' ]
+        self.err_attrs = ['err_url_parse', 'err_no_azp_token', 'err_layer1_gnupg_home_directory_not_found', 'err_layer1_decrypt_failed', 'err_layer2_decrypt_failed', 'err_layer2_signature_fail', 'err_layer3_not_two_parts', 'err_layer3_attribute_data_part_fail', 'err_layer3_attribute_value_fail',  'err_layer3_authen_data_part_fail', 'err_layer4_app_name_not_matched', 'err_layer4_ip_check_failed', 'err_layer4_token_time_elapsed', 'err_layer4_time_check_exception', 'err_missing_user_vals' ]
         self.reset_flags()
     
         self.check_authz_return_url()
@@ -58,6 +59,20 @@ class AuthZChecker:
         self.user_lname = self.custom_attributes.get('givenname', None)
         self.user_email = self.custom_attributes.get('mail', None)
     
+    def get_user_vals(self):
+        return { 'fname': self.user_fname\
+                ,'lname': self.user_lname\
+                ,'email': self.user_email\
+                }
+    
+    def has_user_vals(self):
+        if not (self.user_fname and self.user_lname and self.user_email):
+            self.err_missing_user_vals = True
+            self.add_err('Missing user values.  Need mail, sn, givenname.  Have: %s' % self.custom_attributes)
+            return False
+        
+        return True
+    
     
     def show_user_vals(self):
         if self.custom_attributes is None:
@@ -68,7 +83,15 @@ class AuthZChecker:
         print 'user_email: %s' % self.user_email
         print 'user_lname: %s' % self.user_lname
         print 'user_fname: %s' % self.user_fname
-        
+    
+    
+    def did_authz_check_pass(self):
+        for err_attr in self.err_attrs:
+            if self.__dict__.get(err_attr, False) is True:
+                return False
+        return True
+    
+    
     def show_errs(self):
         #print 'AuthZChecker: errors'
         err_found = False
@@ -144,7 +167,12 @@ Version: 5.0
             self.err_no_azp_token = True
             return
                 
-        gpg_obj = gnupg.GPG(gnupghome='/Users/raprasad/projects/mcb-git/Django-HU-Pin-Auth/hu_authz/gpg-test', verbose=True)
+        if not os.path.isdir(self.gnupghome):
+            self.add_err('directory not found: %s' % self.gnupghome)
+            self.err_layer1_gnupg_home_directory_not_found = True
+            return
+            
+        gpg_obj = gnupg.GPG(gnupghome=self.gnupghome, verbose=True)
         
         decrypted_data = gpg_obj.decrypt(encrypted_data_string, passphrase='gpgmove')
         print '\n\ndecrypted_data: %s' % decrypted_data
@@ -222,9 +250,9 @@ Version: 5.0
         user_id, login_timestamp, client_ip, app_id, id_type = authen_data_parts
 
         # (4a) check application name
-        if not app_id == self.app_name:
+        if not app_id in self.app_names:
             self.err_layer4_app_name_not_matched = True
-            self.add_err('authz app id: [%s] actual app id: [%s]' % (app_id, self.app_name))
+            self.add_err('authz app id: [%s] actual app id: [%s]' % (app_id, self.app_names))
             return
         
         # (4b) verify the IP
