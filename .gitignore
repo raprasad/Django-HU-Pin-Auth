@@ -4,3 +4,4 @@ hu_authzproxy/test*.txt
 test_notes/*
 log/*
 */gpg-test/*
+hu_authzproxy/authz_checker.py

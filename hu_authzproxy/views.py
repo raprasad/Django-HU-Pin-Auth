@@ -8,6 +8,11 @@ from hu_authzproxy.authzproxy_login_handler import AuthZProxyLoginHandler
 from hu_authzproxy.authz_proxy_validation_info import AuthZProxyValidationInfo
 
 
+def view_handle_pin_failure(request):
+    # do something here if person logs into PIN but fails AuthZProxy group test
+    #
+    return HttpResponse('pin fail')
+
 def view_handle_pin_callback(request):
     """View to handle pin callback
     If authentication is succesful:
