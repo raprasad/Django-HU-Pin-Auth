@@ -4,8 +4,8 @@ from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
 from django.contrib.auth import authenticate, login
 from django.conf import settings
-from hu_azuthzproxy.authzproxy_login_handler import AuthZProxyLoginHandler
-from hu_azuthzproxy.authz_proxy_validation_info import AuthZProxyValidationInfo
+from hu_authzproxy.authzproxy_login_handler import AuthZProxyLoginHandler
+from hu_authzproxy.authz_proxy_validation_info import AuthZProxyValidationInfo
 
 
 def view_handle_pin_callback(request):
@@ -23,16 +23,17 @@ def view_handle_pin_callback(request):
     # How Django handles authentication after pin is verfied. 
     # See "authz_pin_login_handler.PinLoginHandler" class handler for more info
     # This allows anyone with a harvard pin to log in
-    access_settings = { 'restrict_to_existing_users':False \
-                         , 'restrict_to_active_users':False \
-                         , 'restrict_to_staff':False \
+    access_settings = { 'restrict_to_existing_users':True \
+                         , 'restrict_to_active_users':True \
+                         , 'restrict_to_staff':True \
                          , 'restrict_to_superusers':False}
 
-     authz_validation_info = AuthZProxyValidationInfo(request_obj=request\
-                                 ,app_names=settings.HU_PIN_LOGIN_APP_NAMES,\
+    authz_validation_info = AuthZProxyValidationInfo(request=request\
+                                 ,app_names=settings.HU_PIN_LOGIN_APP_NAMES\
                                  , gnupghome=settings.GNUPG_HOME)
 
-    authz_pin_login_handler = AuthZProxyLoginHandler(authz_validation_info\
+
+    authz_pin_login_handler = AuthZProxyLoginHandler(authz_validation_info=authz_validation_info\
                                      , **access_settings)    
                                      
     if authz_pin_login_handler.did_login_succeed():

@@ -1,4 +1,5 @@
 {% extends "admin/base_site.html" %}
+{% load url from future %}
 {% load i18n %}
 
 {% block breadcrumbs %}<div class="breadcrumbs"><a href="../">{% trans 'Home' %}</a></div>{% endblock %}
@@ -15,6 +16,40 @@
 
 {% comment %}
 <!-- START: HU PIN login error checks -->
+{% if err_url_parse %}There were problems reading the authorization url.  <br /><br />(flag:err_url_parse) {% endif %}
+
+{% if err_no_azp_token %}The pin login url did not contain the correct information.<br /><br />(flag:err_no_azp_token) {% endif %}
+
+{% if err_layer1_gnupg_home_directory_not_found %}The server credentials were not found.<br /><br />(flag:err_layer1_gnupg_home_directory_not_found) {% endif %}
+
+{% if err_layer1_decrypt_failed %}Unable to decrypt the authorization url.<br /><br />(flag:err_layer1_decrypt_failed) {% endif %}
+
+{% if err_layer2_decrypt_failed %}The authorization url did not contain the expected data pieces.<br /><br />(flag:err_layer2_decrypt_failed) {% endif %}
+
+{% if err_layer2_signature_fail %}The authorization url failed verification.<br /><br />(flag:err_layer2_signature_fail) {% endif %}
+
+{% if err_layer3_not_two_parts %}The authentication data and attribute lists were not found.  <br /><br />(flag:err_layer3_not_two_parts) {% endif %}
+
+{% if err_layer3_attribute_data_part_fail %}Your credentials could not be read from the pin server url.<br /><br />(flag:err_layer3_attribute_data_part_fail) {% endif %}
+
+{% if err_layer3_authen_data_part_fail %}The authentication data string did contain the expected information.<br /><br />(flag:err_layer3_authen_data_part_fail) {% endif %}
+
+{% if err_layer4_app_name_not_matched %}The application name was unexpected.<br /><br />(flag:err_layer4_app_name_not_matched) {% endif %}
+
+{% if err_layer4_ip_check_failed %}Your IP address did not match the login.<br /><br />(flag:err_layer4_ip_check_failed) {% endif %}
+
+{% if err_layer4_token_time_elapsed %}Your sign in has expired.  Please <a href="https://www.pin1.harvard.edu/pin/logout" target="_blank">Logout</a> and try again.<br /><br />(flag:err_layer4_token_time_elapsed) {% endif %}
+
+{% if err_layer4_time_check_exception %}Your sign time was unreadable.  Please <a href="https://www.pin1.harvard.edu/pin/logout" target="_blank">Logout</a> and try again.  <br /><br />(flag:err_layer4_time_check_exception) {% endif %}
+
+{% if err_missing_user_vals %}The name and email returned by Pin login were incomplete.<br /><br />(flag:err_missing_user_vals) {% endif %}
+
+ 
+ 
+ 
+ 
+ 
+<!-- END: HU PIN login error checks -->
 {% endcomment %}
     {% if err_pgp_msg_check %}Please try again.{% endif %}
 
@@ -85,7 +120,7 @@
 {% endcomment %}
 </div>
 
-<p><a href="{% url admin:index %}">{% trans 'Log in again' %}</a></p>
+<p><a href="{% url 'admin:index' %}">{% trans 'Log in again' %}</a></p>
 <p><a href="https://www.pin1.harvard.edu/pin/logout" target="_blank">Harvard Pin Logout</a></p>
 
 {% endblock %}

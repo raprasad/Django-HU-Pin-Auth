@@ -64,10 +64,11 @@ class AuthZProxyLoginHandler:
         self.authz_validation_info = authz_validation_info
         self.has_err = False
         self.err_lookup = {}
+        self.err_msgs = []
         
         self.access_settings = access_settings
                 
-        self.handle_authorization(request)
+        self.handle_authorization()
     
     def did_login_succeed(self):
         if self.user is not None and not self.has_err:
@@ -76,6 +77,9 @@ class AuthZProxyLoginHandler:
     
     def get_error_dict(self):
         return self.err_lookup 
+
+    def get_err_msgs(self):
+        return self.err_msgs
      
     def get_user(self):
         return self.user
@@ -83,11 +87,8 @@ class AuthZProxyLoginHandler:
     def handle_authorization(self):
         self.user = None
         
-        if request is None:
-            pass    # This error is handled and marked in the authorization_backend below
-
         if self.access_settings is not None:
-            authorization_backend  = HarvardAuthZProxyBackend( self.authz_validation_info, **self.access_settings)    
+            authorization_backend  = HarvardAuthZProxyBackend( authz_validation_info=self.authz_validation_info, **self.access_settings)    
         else:
             authorization_backend  = HarvardAuthZProxyBackend(self.authz_validation_info)
         
@@ -97,6 +98,7 @@ class AuthZProxyLoginHandler:
         else:
             self.has_err = True
             self.err_lookup = authorization_backend.get_err_flag_dict()
+            self.err_msgs = authorization_backend.get_err_msgs()
             
       
         

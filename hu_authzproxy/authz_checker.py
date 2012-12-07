@@ -33,12 +33,15 @@ class AuthZChecker:
                 , app_names=['e.g. FAS_DEPT_DB_AUTHZ']\
                 , gnupghome='path-to-.gnupg'\
                 , user_request_ip='client IP address'\
+                , is_debug=False
                 ):
         self.expiration_time_seconds = 2 * 60 # 2 minutes until PGP log in message expires 
         self.url_full_path = url_full_path
         self.app_names = app_names
         self.user_request_ip = user_request_ip
         self.gnupghome = gnupghome
+
+        self.is_debug = is_debug
         
         self.custom_attributes = None
         self.user_fname = None
@@ -49,7 +52,7 @@ class AuthZChecker:
         self.url_dict = None
         
         self.err_msgs = []
-        self.err_attrs = ['err_url_parse', 'err_no_azp_token', 'err_layer1_gnupg_home_directory_not_found', 'err_layer1_decrypt_failed', 'err_layer2_decrypt_failed', 'err_layer2_signature_fail', 'err_layer3_not_two_parts', 'err_layer3_attribute_data_part_fail', 'err_layer3_attribute_value_fail',  'err_layer3_authen_data_part_fail', 'err_layer4_app_name_not_matched', 'err_layer4_ip_check_failed', 'err_layer4_token_time_elapsed', 'err_layer4_time_check_exception', 'err_missing_user_vals' ]
+        self.err_attrs = ['err_url_parse', 'err_no_azp_token', 'err_layer1_gnupg_home_directory_not_found', 'err_layer1_decrypt_failed', 'err_layer2_decrypt_failed', 'err_layer2_signature_fail', 'err_layer3_not_two_parts', 'err_layer3_attribute_data_part_fail',   'err_layer3_authen_data_part_fail', 'err_layer4_app_name_not_matched', 'err_layer4_ip_check_failed', 'err_layer4_token_time_elapsed', 'err_layer4_time_check_exception', 'err_missing_user_vals' ]
         self.reset_flags()
     
         self.check_authz_return_url()
@@ -84,9 +87,9 @@ class AuthZChecker:
 
         for k, v in self.custom_attributes.iteritems():
             print '%s: [%s]' % (k, v)
-        print 'user_email: %s' % self.user_email
-        print 'user_lname: %s' % self.user_lname
-        print 'user_fname: %s' % self.user_fname
+        #print 'user_email: %s' % self.user_email
+        #print 'user_lname: %s' % self.user_lname
+        #print 'user_fname: %s' % self.user_fname
     
     
     def did_authz_check_pass(self):
@@ -133,7 +136,7 @@ Version: 5.0
 
     def add_err(self, msg):
         self.err_msgs.append(msg)
-        print msg
+        #print msg
         
     def check_authz_return_url(self):
         """
@@ -176,10 +179,10 @@ Version: 5.0
             self.err_layer1_gnupg_home_directory_not_found = True
             return
             
-        gpg_obj = gnupg.GPG(gnupghome=self.gnupghome, verbose=True)
+        gpg_obj = gnupg.GPG(gnupghome=self.gnupghome, verbose=self.is_debug)
         
         decrypted_data = gpg_obj.decrypt(encrypted_data_string, passphrase='gpgmove')
-        print '\n\ndecrypted_data: %s' % decrypted_data
+        #print '\n\ndecrypted_data: %s' % decrypted_data
 
         if decrypted_data is None:
             self.err_layer1_decrypt_failed = True
@@ -259,8 +262,13 @@ Version: 5.0
             self.add_err('authz app id: [%s] actual app id: [%s]' % (app_id, self.app_names))
             return
         
+        #return # skip IP and timestamp verifiation settings
+        
         # (4b) verify the IP
-        if not client_ip == self.user_request_ip:
+        if self.is_debug and self.user_request_ip == '127.0.0.1':
+            # allow client address of 127.0.0.1 for testing
+            pass
+        elif not client_ip == self.user_request_ip:
             self.err_layer4_ip_check_failed = True
             self.add_err('authz client_ip: [%s] user ip: [%s]' % (client_ip, self.user_request_ip))
             return

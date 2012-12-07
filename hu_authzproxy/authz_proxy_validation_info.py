@@ -1,5 +1,4 @@
 
-request, app_names, gnupghome
 
 class AuthZProxyValidationInfo:
     """
@@ -11,27 +10,27 @@ class AuthZProxyValidationInfo:
 
     gnupghome = # fullpath to .gnupg. directory, e.g. "/home/some-dir/.gnupg"
     """
-    def __init__(self, request_obj, app_names, gnupghome):
-        self.request = request_obj
+    def __init__(self, request, app_names, gnupghome, is_debug=False):
+        self.request = request
         self.app_names = app_names 
         self.gnupghome = gnupghome  
-
+        self.is_debug = is_debug    # allows client IPs of 127.0.0.1
     
     def get_url_fullpath(self):
-        if self.request_obj is None:
+        if self.request is None:
             return None
             
         try:
-            return self.request_obj.get_full_path()
+            return self.request.get_full_path()
         except:
             return None
             
             
     def get_client_ip(self):
-        if self.request_obj is None:
+        if self.request is None:
             return None
-        
+
         try:
-            self.request_obj.META.get('REMOTE_ADDR', None)
+            return self.request.META.get('REMOTE_ADDR', None)
         except:
             return None
