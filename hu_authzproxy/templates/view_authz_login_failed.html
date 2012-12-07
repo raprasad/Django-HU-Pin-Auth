@@ -1,0 +1,71 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="../">{% trans 'Home' %}</a></div>{% endblock %}
+
+{% block content %}
+
+<div style="border:1px solid #ff0000; padding:10px; width:500px; margin:20px 0;">
+    Sorry!  There was an error with your login.<br /><br />
+
+{% if err_no_request_obj or err_url_parse %}
+    <!-- bad request or url -->
+    Please try again. 
+{% endif %}
+
+{% comment %}
+<!-- START: HU PIN login error checks -->
+{% endcomment %}
+ {% for err_keyname, err_val in err_dict.iteritems %}
+    {% if err_val %}
+        <p>Error: {{ err_keyname }}</p>
+    {% endif %}
+ {% endfor %}
+{% comment %}
+<!-- END: HU PIN login error checks -->
+{% endcomment %}
+
+{% comment %}
+<!-- START: Django auth Errors -->
+{% endcomment %}
+
+    {% if err_no_email_in_hu_ldap %}
+        Your entry in Harvard's directory does not have an email address.
+        An email address is required to sign-in to this system.
+        <p>Please contact 
+        <a href="mailto:directory_services@harvard.edu">directory_services@harvard.edu</a>
+        regarding your entry.</p>
+    {% endif %}
+    
+    {% if err_huid_not_found_in_hu_ldap%}
+        Your ID was not found in the Harvard lookup system.  Please try to log in again.
+    {% endif %}            
+
+    {% if err_not_an_existing_user%}
+        Only existing users may use this system.<br /><br />
+        Please contact the administrator of this system regarding access.
+    {% endif %}            
+    
+    {% if err_account_not_active%}
+        Your account is inactive.<br /><br />
+        Please contact the administrator of this system.
+    {% endif %}            
+
+    {% if err_user_not_staff%}
+        You do not have permission to access this system.<br /><br />
+        Please contact the administrator of this system.
+    {% endif %}            
+
+    {% if err_user_not_superuser%}
+        You do not have permission to access this system.<br /><br />
+        Please contact the administrator of this system.
+    {% endif %}            
+{% comment %}
+<!-- END: Django auth Errors -->
+{% endcomment %}
+</div>
+
+<p><a href="{% url admin:index %}">{% trans 'Log in again' %}</a></p>
+<p><a href="https://www.pin1.harvard.edu/pin/logout" target="_blank">Harvard Pin Logout</a></p>
+
+{% endblock %}

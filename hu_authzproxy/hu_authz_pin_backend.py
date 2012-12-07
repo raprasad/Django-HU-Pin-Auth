@@ -6,7 +6,7 @@ from django.template.defaultfilters import slugify
 from hu_authzproxy.authz_checker import AuthZChecker
 
 
-class HarvardAuthZProxyBackend(Object):
+class HarvardAuthZProxyBackend:
     """This authentication backend handles callbacks after people have logged with a Harvard Pin.
     
     The "token" passed to the authenticate message is the callback url returned from the HU authentication system, including the GET arguments.
@@ -22,14 +22,24 @@ class HarvardAuthZProxyBackend(Object):
     supports_anonymous_user = False
     supports_object_permissions = True
     
-    def __init__(self, **kwargs):
+    def __init__(self, authz_validation_info, **kwargs):
+
+        self.authz_validation_info = authz_validation_info  # instance of AuthZProxyValidationInfo
+
+        self.restrict_to_existing_users = kwargs.get('restrict_to_existing_users', True)
+        self.restrict_to_active_users = kwargs.get('restrict_to_active_users', True)
+        self.restrict_to_staff = kwargs.get('restrict_to_staff', True)
+        self.restrict_to_superusers = kwargs.get('restrict_to_superusers', False)
         
         # Error flags that may be raised in the authentication process
         # These flags may later be used in templates
-        self.error_check_attribute_names = ['err_no_request_obj']
-        
-    def get_expiration_check_seconds(self):
-        return self.expiration_check_time_seconds   # seconds until PGP log in message expires 
+        self.error_check_attribute_names = [ 'err_url_lookup_vals_in_dict_is_none', 'err_user_not_created_name_email_vals_not_in_dict', 'err_account_not_active', 'err_user_not_staff' ,  'restrict_to_superusers', 'err_user_not_superuser']
+
+except User.DoesNotExist:
+    if self.restrict_to_existing_users:
+        self.err_not_an_existing_user = True
+        return None
+        ]
         
     def add_authz_error_flags(self, authz_obj):
         if authz_obj is None:
@@ -51,28 +61,16 @@ class HarvardAuthZProxyBackend(Object):
             lu.update({ attr_name : self.__dict__.get(attr_name, False )})
         return lu
         
-    def authenticate(self, request=None):
+    def authenticate(self):
         
         # initialize error flags
-        self.init_err_checks()
-        
-        if request is None:
-            self.err_no_request_obj = True
-            msg("request is None")
-            return None
-            
-        
-        url_full_path = request.get_full_path()
-        user_request_ip = request.META.get('REMOTE_ADDR', 'unknown')
+        self.init_err_checks()    
 
-
-        zcheck = AuthZChecker(url_full_path=url_full_path, app_name)
-        #  zcheck.show_errs()
-        # zcheck.show_user_vals()
-        zcheck = AuthZChecker( url_full_path=TEST_AZP_MSG\
-                        , app_names=['FAS_FCOR_MCB_GRDB_AUTHZ']\
-                        , user_request_ip=user_request_ip\
-                        , gnupghome='/Users/raprasad/projects/mcb-git/Django-HU-Pin-Auth/hu_authzproxy/gpg-test')
+        zcheck = AuthZChecker( url_full_path=self.authz_validation_info.get_url_fullpath()\
+                        , app_names=self.authz_validation_info.app_names
+                        , gnupghome=self.authz_validation_info.gnupghome\
+                        , user_request_ip=self.authz_validation_info.get_client_ip()
+                        )
         
         # auth failed!
         if not zcheck.did_authz_check_pass():
@@ -88,16 +86,23 @@ class HarvardAuthZProxyBackend(Object):
             return None
             
         return user
-
+        
+    def get_err_flag_dict(self):
+        lu = {}
+        for attr_name in self.error_check_attribute_names:
+            lu.update({ attr_name : self.__dict__.get(attr_name, False )})
+        return lu
+            
     def get_or_create_user(self, lu):
         if lu is None:
-            self.err_url_lookup_vals_not_in_dict = True
+            self.err_url_lookup_vals_in_dict_is_none = True
             return None
 
         user_email = lu.get('email', None)
         user_lname = lu.get('lname', None)
         user_fname = lu.get('fname', None)
         if not (email and lname and fname):
+            self.err_user_not_created_name_email_vals_not_in_dict = True
             return None
         
         username = user_email[:30]  # Django user names restricted to 30 characters

@@ -26,10 +26,14 @@ https://www.pin1.harvard.edu/pin/authenticate?__authen_application=FAS_FCOR_MCB_
 URL_KEY_AZP_TOKEN = '_azp_token'
 
 
-TEST_AZP_MSG = """https://adminapps.mcb.harvard.edu/mcb-grad/hu_azp/callback?_azp_token=-----BEGIN+PGP+MESSAGE-----%0D%0AVersion%3A+Cryptix+OpenPGP+0.20050418%0D%0A%0D%0AhQEMA%2FVD%2FGQNXDZ2AQf%2FdxB7qnk0mzZIwm3sU0wfWmfsj2FU5iiVsUdbK%2FR6Bw0B%0D%0AHNbNgSikQvYGJ0HZ5wd%2BxY3nxODidn2YPoXyUvqzXa2pWl1hzS2Z1iN9e%2BcCoT6l%0D%0AlLG5jVBqRybajm5yQ5R7Muk6WQ1S0gN6xaudo%2Fv84V%2FkuIQxLP58oxx%2Fmxxzbw79%0D%0Av1nGlsc%2BuB7vEfoxj8gMSIuLMHzoqCZkoQyu5bmUmt6q1a%2Bg8MYxN39QelvG5ppJ%0D%0AHH0Ik9fgZVz9bYKWabHRCxmHWSdvDWnTGqnu3FL6sJ2G7U8422HDN%2B3o4rNXiTsb%0D%0AOaNmZ%2FKVPNtYz3IaKIgldwLLisTDqGA9JxBxaIacIKUBLNIC34%2BzTMJjh%2B50MrzD%0D%0Agksm7aE0F5GGta4rrJO7d0qCvZTm9GFeFWyifvY2CCuWr3S40nXeR1LyNH8Qew95%0D%0A%2Fg%2BIsXinykDSneFBAo7SyTyG83%2B660wkuyKPLU91bL1HEqj7g0NowNla3yTCJcVB%0D%0A8efShTkTc91Rbx%2BlK7Z%2BRfh3ONXqWNzTSyK64vFsNB%2BF92Es%2BUjPtfzoXJal7g%2Bw%0D%0A7%2FfeuKdAb9ZczQ2q9wK1VNFyq%2BgJvpSpqQrEgeKVAWDOY2hn9RHup0k%2BUFFnNbEv%0D%0AyVktPgsbseVveqofFHy7osdEHoJ%2BQUnTSKiR7DY88NBbIItx3IFRXGB2H6ZN4WtB%0D%0AXxK%2BpLew8y19QUOiym9C73NmzxmHiIs9nmDb7bIDQyR3KCsnilr1F7jOO3y%2FqQ%3D%3D%0D%0A%3DKqhA%0D%0A-----END+PGP+MESSAGE-----%0D%0A"""
+TEST_AZP_MSG = """https://adminapps.mcb.harvard.edu/mcb-grad/hu_azp/callback?_azp_token=-----BEGIN+PGP+MESSAGE-----%0D%0AVersion%3A+Cryptix+OpenPGP+0.20050418%0D%0A%0D%0AhQEMA%2FVD%2FGQNXDZ2AQgArrnoVaz2SsDBvIcIdi%2BtRbOwlXZf0S0jNA3OCpL%2F5D5b%0D%0ADQIXT5D9urAGJPyjN0kB%2BG2%2BL0e22fJy3S3QjDhbYPm97GKywHUJDW3K9BagYEaD%0D%0A1Mry8XRGDY5bf%2F6xfMq%2Bq3tT%2FGs1WpfDQLT7zzzRa0T6dOusP9RjWm6%2F%2FfLrPtSw%0D%0AIko8vmgL7vdvU4QjqmUb0dMsUw0VEfsagRDcSTAglfhryOFWf7%2B%2BDerJqagHQSdH%0D%0A%2BGYkxCCcdwvWe9Ta7qJcVIM%2BfFaqYTDSSjE1h%2Fz3XDeilUgJAyCVRl%2FRCcoWwhrn%0D%0A47lSV2DxIjVo1D%2BWQeFR%2BbPS9S3uU9af%2BdLM2Zh4sqUBKdYB12oj1GVnVaHxTSA2%0D%0Ac5kKetfDdS5mAv3prmQdkYrPoF1gBwNfM1NGjjDC38Uhz%2BhDavCVVsx6FaVP2Tvu%0D%0AncCgA2Zrj46lTObQsbNcIYUgi5XNA2c3ArrbKGc2LmgFqaNjUP6LrcysurpojK74%0D%0ArAVJiXcGaeD8meCGZGZyMlm%2FcYpAPY5ikknTq88c70Eq2EVHFvV2HKB7FACrTkSH%0D%0AsKs5ZaSAvm2h7%2BxtvXIjhixkzRRxDiq5qZJq6VIK9bYkbzsJ%2FCVxJ0htkHq8yuYG%0D%0AtMAe3iE54kaGZpaCm4ozjqXPQa47%2FASgcUBOd6qMX%2FFLnOdWzxENCSwtXX1qEZvT%0D%0ALqOsDULeZtwtrNXWB11zO4As4etNbd%2FQbAjET%2FkhjJgBNuOw5vUQZ28g8Q%3D%3D%0D%0A%3DgFeY%0D%0A-----END+PGP+MESSAGE-----%0D%0A"""
 
 class AuthZChecker:
-    def __init__(self, url_full_path=TEST_AZP_MSG, app_names=['FAS_FCOR_MCB_GRDB_AUTHZ'], user_request_ip='140.247.10.93', gnupghome='/Users/raprasad/projects/mcb-git/Django-HU-Pin-Auth/hu_authzproxy/gpg-test'):
+    def __init__(self, url_full_path='url with azp token'\
+                , app_names=['e.g. FAS_DEPT_DB_AUTHZ']\
+                , gnupghome='path-to-.gnupg'\
+                , user_request_ip='client IP address'\
+                ):
         self.expiration_time_seconds = 2 * 60 # 2 minutes until PGP log in message expires 
         self.url_full_path = url_full_path
         self.app_names = app_names
@@ -280,7 +284,10 @@ Version: 5.0
         
 
 if __name__ == '__main__':
-    zcheck = AuthZChecker()
+    zcheck = AuthZChecker( url_full_path=TEST_AZP_MSG\
+                , app_names=['FAS_FCOR_MCB_GRDB_AUTHZ']\
+                , gnupghome='gpg-test'\
+                , user_request_ip='140.247.108.24')
     zcheck.show_errs()
     zcheck.show_user_vals()
 

@@ -1,14 +1,21 @@
 from django.contrib.auth import authenticate, login
-from hu_pin_auth.auth_hu_pin_backend_ldap import HarvardPinWithLdapAuthBackend
+from hu_authzproxy.hu_authz_pin_backend import HarvardAuthZProxyBackend
+from hu_authzproxy.authz_proxy_validation_info import  AuthZProxyValidationInfo
 import sys
 
+     
+        
 class AuthZProxyLoginHandler:
     """Handles the attempt to authorize/login the user, may be used in a view
     
     ----------------------------
     sample usage in a view:
     ----------------------------
-    pin_login_handler = AuthZProxyLoginHandler(request)    # request object
+    pin_login_handler = AuthZProxyLoginHandler(request, validation_settings)    # request object
+
+    validation_settings = { 'app_names' : [']}
+
+
     if pin_login_handler.did_login_succeed():
         #the_user = pin_login_handler.user # if needed
         return HttpResponseRedirect('go to login success page')
@@ -45,16 +52,21 @@ class AuthZProxyLoginHandler:
                         , 'restrict_to_staff':False \
                         , 'restrict_to_superusers':False}
                         
-    pin_login_handler = PinLoginHandler(request, **access_settings)
+    pin_login_handler = AuthZProxyLoginHandler(request, app_names, user_request_ip, gnupghome,  **access_settings)
+    
+    
     """
-    def __init__(self, request, **access_settings):
+    def __init__(self, authz_validation_info, **access_settings):
+        """
+        authz_validation_info is an AuthZProxyValidationInfo object
+        """
         self.user = None
-        
+        self.authz_validation_info = authz_validation_info
         self.has_err = False
         self.err_lookup = {}
         
         self.access_settings = access_settings
-        
+                
         self.handle_authorization(request)
     
     def did_login_succeed(self):
@@ -68,18 +80,18 @@ class AuthZProxyLoginHandler:
     def get_user(self):
         return self.user
         
-    def handle_authorization(self, request):
+    def handle_authorization(self):
         self.user = None
         
         if request is None:
             pass    # This error is handled and marked in the authorization_backend below
 
         if self.access_settings is not None:
-            authorization_backend  = HarvardPinWithLdapAuthBackend(**self.access_settings)    
+            authorization_backend  = HarvardAuthZProxyBackend( self.authz_validation_info, **self.access_settings)    
         else:
-            authorization_backend  = HarvardPinWithLdapAuthBackend()
+            authorization_backend  = HarvardAuthZProxyBackend(self.authz_validation_info)
         
-        self.user = authorization_backend.authenticate(request)
+        self.user = authorization_backend.authenticate()
         if self.user:
             self.has_err= False
         else:
