@@ -105,7 +105,9 @@ class HarvardPinAuthBackendBase(object):
                                 , 'err_huid_not_in_callback_url'\
                                 , 'err_app_name_check'\
                                 , 'err_ip_check'\
-                                , 'err_time_check' ]
+                                , 'err_time_check'
+                                , 'err_msg_option'
+                                 ]
     
     def get_expiration_check_seconds(self):
         return self.expiration_check_time_seconds   # seconds until PGP log in message expires 
@@ -140,6 +142,7 @@ class HarvardPinAuthBackendBase(object):
             lu = parse_qs(urlparse(url_full_path).query)
         except: 
             self.err_url_parse = True
+            self.err_msg_option = url_full_path
             msg('failed to parse path: [%s]' % (url_full_path))
             return None
         
