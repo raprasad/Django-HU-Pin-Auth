@@ -35,8 +35,9 @@ def view_handle_pin_callback(request):
 
     authz_validation_info = AuthZProxyValidationInfo(request=request\
                                  ,app_names=settings.HU_PIN_LOGIN_APP_NAMES\
-                                 , gnupghome=settings.GNUPG_HOME)
-
+                                 , gnupghome=settings.GNUPG_HOME\
+                                 , gpg_passphrase=None\
+                                 )
 
     authz_pin_login_handler = AuthZProxyLoginHandler(authz_validation_info=authz_validation_info\
                                      , **access_settings)    

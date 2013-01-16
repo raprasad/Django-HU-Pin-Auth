@@ -17,31 +17,38 @@ def msgx(m): dashes(); msg(m); print 'exiting'; sys.exit(0)
 https://www.pin1.harvard.edu/pin/authenticate?__authen_application=FAS_FCOR_MCB_GRDB_AUTHZ
 _DEV
 
-http://140.247.108.24/mcb-grad/hu_azp/no-access?authorizationError=SYSTEM_CURRENTLY_UNAVAILABLE
-
 https://www.pin1.harvard.edu/pin/authenticate?__authen_application=FAS_FCOR_MCB_GRDB_AUTHZ_DEV
+
+#http://140.247.108.24/mcb-grad/hu_azp/no-access?authorizationError=SYSTEM_CURRENTLY_UNAVAILABLE
+
 
 """
 
 URL_KEY_AZP_TOKEN = '_azp_token'
 
 
-TEST_AZP_MSG = """https://adminapps.mcb.harvard.edu/mcb-grad/hu_azp/callback?_azp_token=-----BEGIN+PGP+MESSAGE-----%0D%0AVersion%3A+Cryptix+OpenPGP+0.20050418%0D%0A%0D%0AhQEMA%2FVD%2FGQNXDZ2AQgArrnoVaz2SsDBvIcIdi%2BtRbOwlXZf0S0jNA3OCpL%2F5D5b%0D%0ADQIXT5D9urAGJPyjN0kB%2BG2%2BL0e22fJy3S3QjDhbYPm97GKywHUJDW3K9BagYEaD%0D%0A1Mry8XRGDY5bf%2F6xfMq%2Bq3tT%2FGs1WpfDQLT7zzzRa0T6dOusP9RjWm6%2F%2FfLrPtSw%0D%0AIko8vmgL7vdvU4QjqmUb0dMsUw0VEfsagRDcSTAglfhryOFWf7%2B%2BDerJqagHQSdH%0D%0A%2BGYkxCCcdwvWe9Ta7qJcVIM%2BfFaqYTDSSjE1h%2Fz3XDeilUgJAyCVRl%2FRCcoWwhrn%0D%0A47lSV2DxIjVo1D%2BWQeFR%2BbPS9S3uU9af%2BdLM2Zh4sqUBKdYB12oj1GVnVaHxTSA2%0D%0Ac5kKetfDdS5mAv3prmQdkYrPoF1gBwNfM1NGjjDC38Uhz%2BhDavCVVsx6FaVP2Tvu%0D%0AncCgA2Zrj46lTObQsbNcIYUgi5XNA2c3ArrbKGc2LmgFqaNjUP6LrcysurpojK74%0D%0ArAVJiXcGaeD8meCGZGZyMlm%2FcYpAPY5ikknTq88c70Eq2EVHFvV2HKB7FACrTkSH%0D%0AsKs5ZaSAvm2h7%2BxtvXIjhixkzRRxDiq5qZJq6VIK9bYkbzsJ%2FCVxJ0htkHq8yuYG%0D%0AtMAe3iE54kaGZpaCm4ozjqXPQa47%2FASgcUBOd6qMX%2FFLnOdWzxENCSwtXX1qEZvT%0D%0ALqOsDULeZtwtrNXWB11zO4As4etNbd%2FQbAjET%2FkhjJgBNuOw5vUQZ28g8Q%3D%3D%0D%0A%3DgFeY%0D%0A-----END+PGP+MESSAGE-----%0D%0A"""
 
+"""
+zcheck = AuthZChecker( url_full_path=self.authz_validation_info.get_url_fullpath()\
+                , app_names=self.authz_validation_info.app_names
+                , gnupghome=self.authz_validation_info.gnupghome\
+                , gpg_passphrase=self.authz_validation_info.gpg_passphrase
+                , user_request_ip=self.authz_validation_info.get_client_ip()
+                , is_debug=self.authz_validation_info.is_debug
+                )
+"""
 class AuthZChecker:
-    def __init__(self, url_full_path='url with azp token'\
-                , app_names=['e.g. FAS_DEPT_DB_AUTHZ']\
-                , gnupghome='path-to-.gnupg'\
-                , user_request_ip='client IP address'\
-                , is_debug=False
-                ):
+    def __init__(self, authz_validation_info):
+        """
+        authz_validation_info is an AuthZProxyValidationInfo object
+        """
         self.expiration_time_seconds = 2 * 60 # 2 minutes until PGP log in message expires 
-        self.url_full_path = url_full_path
-        self.app_names = app_names
-        self.user_request_ip = user_request_ip
-        self.gnupghome = gnupghome
-
-        self.is_debug = is_debug
+        self.url_full_path = authz_validation_info.get_url_fullpath()
+        self.app_names = authz_validation_info.app_names
+        self.user_request_ip = authz_validation_info.get_client_ip()
+        self.gnupghome = authz_validation_info.gnupghome
+        self.is_debug = authz_validation_info.is_debug
+        self.gpg_passphrase = authz_validation_info.gpg_passphrase
         
         self.custom_attributes = None
         self.user_fname = None
@@ -181,7 +188,12 @@ Version: 5.0
             
         gpg_obj = gnupg.GPG(gnupghome=self.gnupghome, verbose=self.is_debug)
         
-        decrypted_data = gpg_obj.decrypt(encrypted_data_string, passphrase='gpgmove')
+        if self.gpg_passphrase:
+            decrypted_data = gpg_obj.decrypt(encrypted_data_string\
+                                            , passphrase=self.gpg_passphrase)
+        else:
+            decrypted_data = gpg_obj.decrypt(encrypted_data_string)
+            
         #print '\n\ndecrypted_data: %s' % decrypted_data
 
         if decrypted_data is None:
@@ -290,12 +302,25 @@ Version: 5.0
             
         
         
+TEST_AZP_MSG = """https://adminapps.mcb.harvard.edu/mcb-grad/hu_azp/callback?_azp_token=-----BEGIN+PGP+MESSAGE-----%0D%0AVersion%3A+Cryptix+OpenPGP+0.20050418%0D%0A%0D%0AhQEMA%2FVD%2FGQNXDZ2AQgArrnoVaz2SsDBvIcIdi%2BtRbOwlXZf0S0jNA3OCpL%2F5D5b%0D%0ADQIXT5D9urAGJPyjN0kB%2BG2%2BL0e22fJy3S3QjDhbYPm97GKywHUJDW3K9BagYEaD%0D%0A1Mry8XRGDY5bf%2F6xfMq%2Bq3tT%2FGs1WpfDQLT7zzzRa0T6dOusP9RjWm6%2F%2FfLrPtSw%0D%0AIko8vmgL7vdvU4QjqmUb0dMsUw0VEfsagRDcSTAglfhryOFWf7%2B%2BDerJqagHQSdH%0D%0A%2BGYkxCCcdwvWe9Ta7qJcVIM%2BfFaqYTDSSjE1h%2Fz3XDeilUgJAyCVRl%2FRCcoWwhrn%0D%0A47lSV2DxIjVo1D%2BWQeFR%2BbPS9S3uU9af%2BdLM2Zh4sqUBKdYB12oj1GVnVaHxTSA2%0D%0Ac5kKetfDdS5mAv3prmQdkYrPoF1gBwNfM1NGjjDC38Uhz%2BhDavCVVsx6FaVP2Tvu%0D%0AncCgA2Zrj46lTObQsbNcIYUgi5XNA2c3ArrbKGc2LmgFqaNjUP6LrcysurpojK74%0D%0ArAVJiXcGaeD8meCGZGZyMlm%2FcYpAPY5ikknTq88c70Eq2EVHFvV2HKB7FACrTkSH%0D%0AsKs5ZaSAvm2h7%2BxtvXIjhixkzRRxDiq5qZJq6VIK9bYkbzsJ%2FCVxJ0htkHq8yuYG%0D%0AtMAe3iE54kaGZpaCm4ozjqXPQa47%2FASgcUBOd6qMX%2FFLnOdWzxENCSwtXX1qEZvT%0D%0ALqOsDULeZtwtrNXWB11zO4As4etNbd%2FQbAjET%2FkhjJgBNuOw5vUQZ28g8Q%3D%3D%0D%0A%3DgFeY%0D%0A-----END+PGP+MESSAGE-----%0D%0A"""
 
 if __name__ == '__main__':
-    zcheck = AuthZChecker( url_full_path=TEST_AZP_MSG\
-                , app_names=['FAS_FCOR_MCB_GRDB_AUTHZ']\
-                , gnupghome='gpg-test'\
-                , user_request_ip='140.247.108.24')
+    """
+    Run test
+    """
+    from authz_proxy_validation_info import AuthZProxyValidationInfo
+
+    authz_validation_info = AuthZProxyValidationInfo(request=None\
+                                 ,app_names=['FAS_FCOR_MCB_GRDB_AUTHZ']\
+                                 , gnupghome='gpg-test'
+                                 , gpg_passphrase=None
+                                 , is_debug=True)
+                                            
+    authz_validation_info.set_url_fullpath_manually(TEST_AZP_MSG)                             
+    authz_validation_info.set_client_ip_manually('140.247.108.24')
+    
+    zcheck = AuthZChecker(authz_validation_info)
+    
     zcheck.show_errs()
     zcheck.show_user_vals()
 

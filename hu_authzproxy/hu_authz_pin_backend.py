@@ -77,13 +77,18 @@ class HarvardAuthZProxyBackend(object):
         # initialize error flags
         self.init_err_checks()    
 
+        # e.g. breaking out attributes, allows AuthZChecker to be used without request object
+        #
+        zcheck = AuthZChecker( authz_validation_info=self.authz_validation_info)
+        """
         zcheck = AuthZChecker( url_full_path=self.authz_validation_info.get_url_fullpath()\
                         , app_names=self.authz_validation_info.app_names
                         , gnupghome=self.authz_validation_info.gnupghome\
+                        , gpg_passphrase=self.authz_validation_info.gpg_passphrase
                         , user_request_ip=self.authz_validation_info.get_client_ip()
                         , is_debug=self.authz_validation_info.is_debug
                         )
-        
+        """
         # auth failed!
         if not zcheck.did_authz_check_pass():
             self.add_authz_error_info(zcheck)
