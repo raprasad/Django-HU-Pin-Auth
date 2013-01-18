@@ -62,6 +62,8 @@ class AuthZChecker:
         self.err_attrs = ['err_url_parse', 'err_no_azp_token', 'err_layer1_gnupg_home_directory_not_found', 'err_layer1_decrypt_failed', 'err_layer2_decrypt_failed', 'err_layer2_signature_fail', 'err_layer3_not_two_parts', 'err_layer3_attribute_data_part_fail',   'err_layer3_authen_data_part_fail', 'err_layer4_app_name_not_matched', 'err_layer4_ip_check_failed', 'err_layer4_token_time_elapsed', 'err_layer4_time_check_exception', 'err_missing_user_vals' ]
         self.reset_flags()
     
+        self.decoded_data_string_for_potential_err_msg = None # for passing back in error messages
+    
         self.check_authz_return_url()
         self.set_user_vals()
 
@@ -115,7 +117,9 @@ class AuthZChecker:
                 print 'Error: %s' % err_attr
                 err_found = True
         
-        for err_msg in self.err_msgs:
+        for idx, err_msg in enumerate(self.err_msgs):
+            if idx == 0: 
+                print '\n-- Errors --'
             print err_msg        
 
         if not err_found:
@@ -141,6 +145,9 @@ Version: 5.0
 %s
 -----END PGP SIGNATURE-----""" % (decoded_data_string, decoded_signature_string)
 
+    def get_decoded_data_string_for_err_msg(self):
+        return self.decoded_data_string_for_potential_err_msg
+        
     def add_err(self, msg):
         self.err_msgs.append(msg)
         #print msg
@@ -213,6 +220,7 @@ Version: 5.0
         url_encoded_data_string,  url_encoded_signature_string = decrypt_parts
 
         decoded_data_string = urllib.unquote(url_encoded_data_string) 
+        self.decoded_data_string_for_potential_err_msg = decoded_data_string
         decoded_signature_string = urllib.unquote(url_encoded_signature_string)
 
         #print 'url_encoded_data_string: [%s]' % decoded_data_string
@@ -272,6 +280,8 @@ Version: 5.0
         if not app_id in self.app_names:
             self.err_layer4_app_name_not_matched = True
             self.add_err('authz app id: [%s] actual app id: [%s]' % (app_id, self.app_names))
+            self.add_err('\nAdditional info: \ndecoded_data_string: [%s]\ndecoded_signature_string: [%s]' % ( decoded_data_string, decoded_signature_string))
+            
             return
         
         #return # skip IP and timestamp verifiation settings
@@ -281,8 +291,10 @@ Version: 5.0
             # allow client address of 127.0.0.1 for testing
             pass
         elif not client_ip == self.user_request_ip:
-            self.err_layer4_ip_check_failed = True
+            self.err_layer4_ip_check_failed = True            
             self.add_err('authz client_ip: [%s] user ip: [%s]' % (client_ip, self.user_request_ip))
+            self.add_err('\nAdditional info: \ndecoded_data_string: [%s]\ndecoded_signature_string: [%s]' % (decoded_data_string, decoded_signature_string))
+            
             return
                 
         # (4c) Check the timestamp
@@ -294,15 +306,22 @@ Version: 5.0
             if time_diff.seconds < 0 or time_diff.seconds > self.expiration_time_seconds:
                 self.err_layer4_token_time_elapsed = True
                 msg('%s second rule failed verification: \nauthz msg: [%s] \nsystem: [%s]' % (self.expiration_time_seconds, login_timestamp, time_now))
+                self.add_err('\nAdditional info: \ndecoded_data_string: [%s]\ndecoded_signature_string: [%s]' % ( decoded_data_string, decoded_signature_string))
+                
                 return
         except:
             self.err_layer4_time_check_exception = True
+            
             msg('time diff failed: auth z timestamp str [%s]' % (login_timestamp))
+            self.add_err('\nAdditional info:\ndecoded_data_string: [%s]\ndecoded_signature_string: [%s]' % ( decoded_data_string, decoded_signature_string))
+            
             return None
             
         
         
 TEST_AZP_MSG = """https://adminapps.mcb.harvard.edu/mcb-grad/hu_azp/callback?_azp_token=-----BEGIN+PGP+MESSAGE-----%0D%0AVersion%3A+Cryptix+OpenPGP+0.20050418%0D%0A%0D%0AhQEMA%2FVD%2FGQNXDZ2AQgArrnoVaz2SsDBvIcIdi%2BtRbOwlXZf0S0jNA3OCpL%2F5D5b%0D%0ADQIXT5D9urAGJPyjN0kB%2BG2%2BL0e22fJy3S3QjDhbYPm97GKywHUJDW3K9BagYEaD%0D%0A1Mry8XRGDY5bf%2F6xfMq%2Bq3tT%2FGs1WpfDQLT7zzzRa0T6dOusP9RjWm6%2F%2FfLrPtSw%0D%0AIko8vmgL7vdvU4QjqmUb0dMsUw0VEfsagRDcSTAglfhryOFWf7%2B%2BDerJqagHQSdH%0D%0A%2BGYkxCCcdwvWe9Ta7qJcVIM%2BfFaqYTDSSjE1h%2Fz3XDeilUgJAyCVRl%2FRCcoWwhrn%0D%0A47lSV2DxIjVo1D%2BWQeFR%2BbPS9S3uU9af%2BdLM2Zh4sqUBKdYB12oj1GVnVaHxTSA2%0D%0Ac5kKetfDdS5mAv3prmQdkYrPoF1gBwNfM1NGjjDC38Uhz%2BhDavCVVsx6FaVP2Tvu%0D%0AncCgA2Zrj46lTObQsbNcIYUgi5XNA2c3ArrbKGc2LmgFqaNjUP6LrcysurpojK74%0D%0ArAVJiXcGaeD8meCGZGZyMlm%2FcYpAPY5ikknTq88c70Eq2EVHFvV2HKB7FACrTkSH%0D%0AsKs5ZaSAvm2h7%2BxtvXIjhixkzRRxDiq5qZJq6VIK9bYkbzsJ%2FCVxJ0htkHq8yuYG%0D%0AtMAe3iE54kaGZpaCm4ozjqXPQa47%2FASgcUBOd6qMX%2FFLnOdWzxENCSwtXX1qEZvT%0D%0ALqOsDULeZtwtrNXWB11zO4As4etNbd%2FQbAjET%2FkhjJgBNuOw5vUQZ28g8Q%3D%3D%0D%0A%3DgFeY%0D%0A-----END+PGP+MESSAGE-----%0D%0A"""
+
+
 
 if __name__ == '__main__':
     """

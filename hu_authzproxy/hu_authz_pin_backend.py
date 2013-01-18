@@ -33,14 +33,24 @@ class HarvardAuthZProxyBackend(object):
         
         # Error flags that may be raised in the authentication process
         # These flags may later be used in templates
-        self.error_check_attribute_names = [ 'err_url_lookup_vals_in_dict_is_none', 'err_user_not_created_name_email_vals_not_in_dict', 'err_account_not_active', 'err_user_not_staff' ,  'restrict_to_superusers', 'err_user_not_superuser']
+        self.error_check_attribute_names = [ 'err_url_lookup_vals_in_dict_is_none', 'err_user_not_created_name_email_vals_not_in_dict','err_not_an_existing_user', 'err_account_not_active',  'err_user_not_staff' ,  'restrict_to_superusers', 'err_user_not_superuser']
 
         self.err_msgs = []
 
+    def add_authz_data_string_info(self, authz_obj):
+        if authz_obj is None:
+            return
+        
+        data_string_with_pin = authz_obj.get_decoded_data_string_for_err_msg()
+        if data_string_with_pin is not None:
+            self.err_msgs.append('Orig data string: %s' % data_string_with_pin)
+
     def add_authz_error_info(self, authz_obj):
+        if authz_obj is None:
+            return
         self.add_authz_error_flags(authz_obj)
         self.add_authz_error_msgs(authz_obj)
-
+      
     def add_authz_error_msgs(self, authz_obj):
         if authz_obj is None:
             return
@@ -100,6 +110,7 @@ class HarvardAuthZProxyBackend(object):
                     
         user = self.get_or_create_user(zcheck.get_user_vals())
         if user is None:
+            self.add_authz_data_string_info(zcheck)
             return None
             
         return user
@@ -117,6 +128,7 @@ class HarvardAuthZProxyBackend(object):
             return None
             
     def get_or_create_user(self, lu):
+
         if lu is None:
             self.err_url_lookup_vals_in_dict_is_none = True
             self.err_msgs.append('Pin Login did not supply email, last name, and first name')
@@ -128,6 +140,7 @@ class HarvardAuthZProxyBackend(object):
         if not (user_email and user_lname and user_fname):
             self.err_user_not_created_name_email_vals_not_in_dict = True
             self.err_msgs.append('Pin Login did not supply email, last name, and first name: %s' % lu)
+            self.err_msgs.append("""email: %s\nlname: %s\nfname: %s""" % (user_email, user_lname, user_fname))
             
             return None
         
@@ -137,20 +150,29 @@ class HarvardAuthZProxyBackend(object):
         try:
             # Check if the user exists in Django's local database
             user = User.objects.get(username=username)
-
+            
+            
             if self.restrict_to_active_users and not user.is_active:
                 self.err_account_not_active = True
+                self.err_msgs.append("""email: %s\nlname: %s\nfname: %s\nusername: %s""" % (user_email, user_lname, user_fname, username))
+                
                 return None
             elif self.restrict_to_staff and not user.is_staff:
                 self.err_user_not_staff = True
+                self.err_msgs.append("""email: %s\nlname: %s\nfname: %s\nusername: %s""" % (user_email, user_lname, user_fname, username))
+                
                 return None
             elif self.restrict_to_superusers and not user.is_superuser:
                 self.err_user_not_superuser = True
+                self.err_msgs.append("""email: %s\nlname: %s\nfname: %s\nusername: %s""" % (user_email, user_lname, user_fname, username))
+                
                 return None
-
+            
         except User.DoesNotExist:
             if self.restrict_to_existing_users:
                 self.err_not_an_existing_user = True
+                self.err_msgs.append("""email: %s\nlname: %s\nfname: %s\ncalculated username: %s""" % (user_email, user_lname, user_fname, username))
+                
                 return None
 
             # Create a user in Django's local database
