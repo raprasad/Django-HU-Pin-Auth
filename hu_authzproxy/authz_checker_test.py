@@ -9,6 +9,12 @@ TEST_AZP_MSG2 = """https://adminapps.mcb.harvard.edu/gmf/hu-azp/callback?_azp_to
 # FAS_FCOR_MCB_GMF_SVC_AUTHZ
 TEST_AZP_MSG3 = """http://140.247.108.24/course-tracker/hu-azp/callback/?_azp_token=-----BEGIN+PGP+MESSAGE-----%0D%0AVersion%3A+Cryptix+OpenPGP+0.20050418%0D%0A%0D%0AhQEMA%2FVD%2FGQNXDZ2AQgAmWDUrHDm1cUR5ZIP053yxHcOa%2Ftx4ff7forRU%2FMyjEMw%0D%0ApkqSJAbWSrrX%2FhcymbbFxgATIvx30K7iz44JURHlqzD2gGP40coqC%2FDgXZx8Pq3Y%0D%0AI7UbLmeOcWoqerqmZqIuCP%2BkqDGbBP%2Bz498%2BVN3lJ2dagcwng1WtfWkxIlLpy3Ed%0D%0ATEzPNJnIqi4WEKifbprqUb9qPm3fx%2FvxogLCGNjX5ir8IYiHrnxGud9H7En2Wiiq%0D%0AtD0CtwiE3gqQ4%2Fayzb1lS2ziQ%2FHSZ%2BtT0shAcaGZrJhZ6jx7vxXj3cS1XYW9VpCe%0D%0A7RiStdBZXeaLiOQlq3gfT9QKB29JbsKW4rT34EdO2KUBNfa4Ir3wbyduo7gp2N5M%0D%0An%2FP%2BWeUA%2FwEAZLvmZJ43MT0B08Bm40Cg%2BrsihnSgGFvint6lqm2qJ7b1448BWO4h%0D%0ABbtQ5lFUu1qwZPffDZJLwzqqtOOP67zgVFvIYL8Ez3C4fBODPdXA7DWggc6PQ0mN%0D%0A8s%2FPnSkl0FjFEh%2BSklcde%2Fh1GBwWwnOyJyug36H%2Bp80GbKfCjHXW%2FupMuMoyTgvr%0D%0AGV%2BxN08Nh5nfh7Sfaq%2FtPU4A5qfBjqkUHs6gQYu1FijI%2BFSprI6RU%2FLTIk%2FgDXHC%0D%0A2cCSIojSlgJB%2Bo4rKl%2FCmoNkpT1cK3%2BNzM47nas0Qyp%2FbWC0JMcUfPd%2B106qfBXB%0D%0AmaSWi4kePCKkWna9mBIdfZc3yd8g%2FD6c25Ywbe1Hoi7j10Kuf3GYDTwuzElVC2BD%0D%0AT%2FM9UmEr2g%3D%3D%0D%0A%3Dy0Wv%0D%0A-----END+PGP+MESSAGE-----%0D%0A"""
 
+GMF_TEST = """http://140.247.108.24/gmf/hu-azp/callback/?_azp_token=-----BEGIN+PGP+MESSAGE-----%0D%0AVersion%3A+Cryptix+OpenPGP+0.20050418%0D%0A%0D%0AhQEMA%2FVD%2FGQNXDZ2AQf8CvPkKD4HRO90fMrn67y4IExvAy41NcVW9w1az7PQ0LX%2F%0D%0ANvrdR2gu4uIHOIzztPQJ7n9ZNjMkvc9NnIBWVQRMmMeKA4eBZsNT%2FMXiybFxJxsJ%0D%0AlQ0f6Ci0I4hRP7PiaGpV19Warq7jprtZDI86DEmLfaGQYllGpeY44hxf3macTxYJ%0D%0Auo%2BGiaVQyoTDbo30CYwHGOueuiajNuRwuNyJ4sRAubY0HBuiIEYxK%2Bv8I2XFH9WU%0D%0A0IQBnrmQ%2FLS2dKdwBglvr5Iq7TEBtPpeU0r5ghVsBDdmXlGVG%2B8Lc1dR5MbV5pgE%0D%0A470X8Bs5MCpYhJ08JtlouBxEyrEOSbGvbSmAGF6a46UBNIM6HJmX1Jb6m6bv7LDL%0D%0AfJSVFNgkx1PfBnLeF0Nsl6y5KG4LsFyMQEbuteVfZxRgc0iuYSq4Exq5QauU9xp%2F%0D%0A9pU3p%2BLQot0I4HpujOx13xuqBMUiTq%2FPRfpROqKGgEWyarl38h2erd0fW0mGc5gp%0D%0A33kaGjhtQ6kXTYElWaYjPqu0t6spgeQmZP6uvRlkUJZaSjbrPHKdx0c58hVV6U%2BT%0D%0A9B63aOWMcYKAfyUu3VacWhMl6T6y52%2B%2F%2BbpOGbAuo8dbxuYj%2FnGIdTFfnng70zjX%0D%0AAiFnLBsXKQ%2FfaLhYoS%2FbOU%2Fk4KZFQJFR9mH3vRddC%2FlDseoHf9uNX%2F132CCTXvY3%0D%0AnydHuHtKRzfKX2cjASeQVJSHyCU8om6GsTolKErmkoIf3JPa3xIGj%2FNZdsXC%2BAZB%0D%0Amp2DbFih%0D%0A%3DNgrr%0D%0A-----END+PGP+MESSAGE-----%0D%0A"""
+
+GMF_PROD = """https://adminapps.mcb.harvard.edu/gmf/hu-azp/callback?_azp_token=-----BEGIN+PGP+MESSAGE-----%0D%0AVersion%3A+Cryptix+OpenPGP+0.20050418%0D%0A%0D%0AhQEMA%2FVD%2FGQNXDZ2AQgAudhHoRsL%2FkXs1W7Akiqz96thRPecyJZdU6pAgqL5RkWJ%0D%0Ab%2FuSRC%2BQ0pbOmTvp69jsrloXg9rRiOhDO95XcvOeqr5JCOUWkri9CGtLDdzhJk6n%0D%0AB3CvPN1dAZ3rSCGX3TVQjW0SozNw9Wk6URcEjtCg%2BCFqCrrgRqmKQBa6yDbGKPXr%0D%0AQUJQAKQ6WvRXuyNXLb3URUmoydLb7KtNdvxj%2BfV77Hm%2B7v7KUOurolNoybbiqK0e%0D%0AmhlsD%2FFx%2FhvR3zLuchisolcTfTEvAieiRn02jEnAzr1MdpSwhH537Vczv3iVWBOi%0D%0ARTcxH60zTD5NgVrpMZXcFTME9tqlbAumbYe%2Fio2jeKUBLPC0hOzCEBWHO923GvZg%0D%0A1RU7U4bcK6qPWViXA47W2NvWNp4ALwN76aYrSfHfCdjAGCtSgC5Qg4vrUmkrTEmG%0D%0AeFGYQnPjxo6imtgep%2Fi3GWF%2FmEpkbIYHu637OY1nNKHtBgHgzHyDim0V86FXKkJZ%0D%0Acu3YtkU5HNISzrFn9qEe7LVxpQC9Q16Xy61PmYde5l9469p82jkGxkfy6ShlT32L%0D%0A%2FPb6yO%2FOWKCLHjOyi4WDyOuauWFgMBf2H1mhQd%2BMjwu98fzGTqefPBAZMwSKfVb%2F%0D%0Ao9v%2BQN3fe8K3Mj8USHaFliEaIFwyxNVmlzKYJ5Fwoi7exDNdXlUkSKzIpDkCRCWx%0D%0AfwS2155surw83N%2BZH5a2SAlVeH%2B8MKZaUY74B2jsQgzXkPZhWqWV%2B9rb5xIUEg%3D%3D%0D%0A%3D6rsm%0D%0A-----END+PGP+MESSAGE-----%0D%0A"""
+
+POSTER_PRINTER_TEST = 'http://140.247.108.24/poster-printer/hu-azp/callback/?_azp_token=-----BEGIN+PGP+MESSAGE-----%0D%0AVersion%3A+Cryptix+OpenPGP+0.20050418%0D%0A%0D%0AhQEMA0etGShXYa0xAQf%2FciVsAOuiIo48Yka1%2BHxlZWWeBuXa7Iq2mkNwBpmrX%2F7P%0D%0AO0PHb28gfjgr55OIKGONxcPLpLHn4gUXcKWqG%2BJMvYSWykg6g0ewl5s5B1p98AYy%0D%0AMRVjTP%2F2fhTxFvZAGejHcCO5jJpt2FHlJhKJ2FEKGtUguVN1j2J9lI0SX3nzbEe%2F%0D%0AGqo4Z9cdUjOdNwO6vbUHXgkLmxO37CEa7s8J9k%2BKgAl%2B98SdRfhlBCfQmvILC8ik%0D%0AHUpHJKF2t8%2BYN0oROiJHuuBiXRW0T0Q5VN5w9ssfm0j0%2B8jSH8DTn%2FNmEaRDwzqA%0D%0A903AUmFT5qODe66xFUEIXWIRvO93UvbrgTmH8ouVRaUBMWWSTyACBa95l%2BWtoJav%0D%0A1%2FkHAL6vLP7f6kAWYKHjObV2aIVzLpBLffEwORzjd63mpauOJoRUFqlc8X%2FXPJ6y%0D%0A35kM%2B8B1RNY72B%2BLrUSpm%2BLYEJcnG%2FAybaKTpfhCU%2B7DrIkNzaWG7hBkqPwIXNs7%0D%0Ay006SsLJ4B79Ise0WHcY5HX0DY%2FvzYg%2FEJCGxGbJKdrnWsJ1vQMfDbN2VKB2KC7o%0D%0AKZ7Xo2K0RMni9q%2F5DVZr0ITosnIuXWHdZxYntLoCtrcXyno75ln4pjXSInkMACkI%0D%0AwNqaAzw2%2F7S7E1lUxzR26r5d0HhD0jnxD4W42EfKVBL8FocnNRxPyJcJILoMHNmO%0D%0AH%2FaNerYnZTzjM612n1FD36C11sO501otYwW0WNdkLWk0EVuSmfqA0GFixCZ28bR0%0D%0AwtWi%0D%0A%3DOwH2%0D%0A-----END+PGP+MESSAGE-----%0D%0A'
+
 if __name__ == '__main__':
     """
     Run test
@@ -16,12 +22,13 @@ if __name__ == '__main__':
     from authz_proxy_validation_info import AuthZProxyValidationInfo
 
     authz_validation_info = AuthZProxyValidationInfo(request=None\
-                                ,app_names=['FAS_FCOR_MCB_GMF_SVC_AUTHZ', 'FAS_FCOR_MCB_COURSEDB_AUTHZ_DEV']\
-                                , gnupghome='gpg-test'
-                                , gpg_passphrase='gpgmove'
+                                ,app_names=['FAS_FCOR_MCB_GPPS_AUTHZ_DEV', 'FAS_FCOR_MCB_GMF_SVC_AUTHZ', 'FAS_FCOR_MCB_COURSEDB_AUTHZ_DEV', 'FAS_FCOR_MCB_GMF_SVC_AUTHZ_DEV']\
+                                #, gnupghome='gpg-test'
+                                , gnupghome='/home/p/r/prasad/.gnupg'
+                                #, gpg_passphrase='gpgmove'
                                 , is_debug=True)
 
-    authz_validation_info.set_url_fullpath_manually(TEST_AZP_MSG3)                             
+    authz_validation_info.set_url_fullpath_manually(POSTER_PRINTER_TEST)                             
     authz_validation_info.set_client_ip_manually('140.247.108.24')
 
     zcheck = AuthZChecker(authz_validation_info)
