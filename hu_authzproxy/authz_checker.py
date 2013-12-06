@@ -71,8 +71,8 @@ class AuthZChecker:
         if self.custom_attributes is None:
             return
         
-        self.user_fname = self.custom_attributes.get('sn', None)
-        self.user_lname = self.custom_attributes.get('givenname', None)
+        self.user_fname = self.custom_attributes.get('givenname', None)
+        self.user_lname = self.custom_attributes.get('sn', None)
         self.user_email = self.custom_attributes.get('mail', None)
     
     def get_user_vals(self):
